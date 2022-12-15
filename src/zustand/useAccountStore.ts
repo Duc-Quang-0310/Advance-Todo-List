@@ -3,8 +3,6 @@ import {
   getAuth,
   signOut,
   signInWithEmailAndPassword,
-  UserInfo,
-  UserMetadata,
   createUserWithEmailAndPassword,
   updatePassword,
   User,
