@@ -21,7 +21,7 @@ export const useAdsblock = () => {
 
   useEffect(() => {
     adDetech();
-  }, []);
+  }, [adDetech]);
 
   return { hasAdblock };
 };
