@@ -1,8 +1,9 @@
 import { useAdsblock } from "./hooks/useAdsblock";
 import { Kbd } from "@chakra-ui/react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Suspense } from "react";
 import { Routers } from "./config/router";
+import { PATH } from "./constants/path.const";
 
 function App() {
   const { hasAdblock } = useAdsblock();
@@ -26,8 +27,10 @@ function App() {
               path={path}
               action={preRenderFunc}
               key={path}
+              id={path}
             />
           ))}
+          <Route path="*" element={<Navigate to={PATH.NOT_FOUND} />} />
         </Routes>
       </BrowserRouter>
     </Suspense>
