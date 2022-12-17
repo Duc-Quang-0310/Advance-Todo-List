@@ -1,0 +1,59 @@
+.authContainer {
+  min-height:100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.form {
+  background-color: #FFFFFF;
+  flex:1  ;
+  padding: 20px 20px;
+}
+
+.logo {
+  display: none;
+}
+
+@media only screen and (min-width: 900px) {
+  .authContainer {
+    background-color:#D3D0DF;
+    padding: 50px 150px;
+  }
+
+  .authContainer > div {
+    background-color: #F3F5F9;
+    display: flex;
+    flex-direction: row;
+    flex:1;
+    border-radius: 8px; 
+    overflow: hidden;
+  }
+
+  .logo {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex:1
+  }
+
+  .logo > span {
+    width: 200px;
+    height: 200px;
+    border-radius: 100%;
+    background-color:#01CDCC ;
+    transition: scale 0.3s ease;
+  }
+
+  .logo > span:hover {
+    scale: 1.3;
+  }
+
+  .logo > div {
+    height: 50%;
+    width: 100%;
+    backdrop-filter: blur(10px);
+    position: absolute;
+    bottom: 0;
+  }
+}
