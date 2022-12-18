@@ -1,0 +1,46 @@
+.authContainer {
+    min-height:100vh;
+    padding: 50px 50px;
+    align-items: center;
+}
+
+.authContainer > div {
+    background-color: #F3F5F9;
+    display: flex;
+    flex-direction: row;
+}
+
+
+.additionalBox {
+    display: flex;
+    justify-content: space-between;
+}
+
+.redirect {
+    font-weight: 600;
+    color: #319795;
+    
+}
+
+.form {
+    padding: 0 8rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+}
+
+.form > div:nth-child(1) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap:20px;
+    margin-bottom: 2rem;
+}
+
+@media only screen and (min-width: 630px) {
+    .authContainer {
+        background-color:#D3D0DF
+    }
+    
+}

@@ -18,6 +18,10 @@ type AccountStore = UseBoundStore<
     mode: "dark" | "light" | "system";
     loading: boolean;
     userObject: User | null;
+    logout: () => void;
+    login: (body: LoginBody) => void;
+    createAccount: (body: LoginBody) => void;
+    changePassword: (body: ChangePasswordBody) => void;
   }>
 >;
 
