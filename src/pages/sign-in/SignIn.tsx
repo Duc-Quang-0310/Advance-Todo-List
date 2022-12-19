@@ -12,17 +12,17 @@ import {
 } from "@chakra-ui/react";
 import { motion, useAnimationControls } from "framer-motion";
 import { useLayoutEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import AuthForm from "../../components/AuthForm";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../../constants/validate.const";
 import { LoginBody } from "../../zustand/type";
-import Logo from "../../../public/todolist.jpg";
 
 import s from "./Signin.module.css";
 import { Link } from "react-router-dom";
 import { PATH } from "../../constants/path.const";
 import useAccountStore from "../../zustand/useAccountStore";
+import { LOGO } from "../../images/images.const";
 
 const SignIn = () => {
   const login = useAccountStore((state) => state.login);
@@ -61,7 +61,7 @@ const SignIn = () => {
           <Image
             borderRadius="full"
             boxSize="70px"
-            src={Logo}
+            src={LOGO}
             alt="Tu đu lít"
           />
           <Text fontSize="md" textAlign="left" opacity={0.6} fontWeight={600}>
@@ -75,7 +75,7 @@ const SignIn = () => {
             render={({ field: { name, onChange, ref } }) => (
               <motion.div initial={initPlace} custom={5} animate={controls}>
                 <FormControl isInvalid={!!errors?.email}>
-                  <FormLabel>Email address</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <Input
                     type="email"
                     name={name}
@@ -119,6 +119,7 @@ const SignIn = () => {
               </motion.div>
             )}
           />
+
           <motion.div
             className={s.additionalBox}
             initial={initPlace}

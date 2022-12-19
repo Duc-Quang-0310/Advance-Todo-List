@@ -4,13 +4,13 @@ import { initializeAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCxLaCWt3idfNkPqtGUXI3SZMFuYx69zuk",
-  authDomain: "cv-todo-list.firebaseapp.com",
-  projectId: "cv-todo-list",
-  storageBucket: "cv-todo-list.appspot.com",
-  messagingSenderId: "31797268535",
-  appId: "1:31797268535:web:807525effd632a45622fb2",
-  measurementId: "G-WMF8WNJ7LD",
+  apiKey: "AIzaSyDhNJ3h5v-m5l-HfW_n8u3xc2-vd3lKXzM",
+  authDomain: "q-todo-app-101.firebaseapp.com",
+  projectId: "q-todo-app-101",
+  storageBucket: "q-todo-app-101.appspot.com",
+  messagingSenderId: "803567338263",
+  appId: "1:803567338263:web:aeda9768477a457cc12d52",
+  measurementId: "G-TC7D6YBGFC",
 };
 
 // Initialize Firebase
