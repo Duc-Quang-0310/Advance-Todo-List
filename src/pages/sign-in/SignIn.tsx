@@ -11,8 +11,9 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { motion, useAnimationControls } from "framer-motion";
-import { useLayoutEffect } from "react";
+import { useCallback, useLayoutEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import cx from "clsx";
 
 import AuthForm from "../../components/AuthForm";
 import { loginSchema } from "../../constants/validate.const";
@@ -26,6 +27,7 @@ import { LOGO } from "../../images/images.const";
 
 const SignIn = () => {
   const login = useAccountStore((state) => state.login);
+  const loading = useAccountStore((state) => state.loading);
   const controls = useAnimationControls();
 
   const initPlace = {
@@ -46,6 +48,14 @@ const SignIn = () => {
   });
 
   const handleSubmitLogin = (body: LoginBody) => login(body);
+
+  const renderContextError = useCallback(
+    (field: keyof LoginBody) =>
+      errors?.[field] ? (
+        <FormErrorMessage>{errors?.[field]?.message}</FormErrorMessage>
+      ) : null,
+    [errors]
+  );
 
   useLayoutEffect(() => {
     controls.start((i) => ({
@@ -82,13 +92,10 @@ const SignIn = () => {
                     onChange={onChange}
                     ref={ref}
                     key={name}
+                    disabled={loading}
                     size="md"
                   />
-                  {errors?.email ? (
-                    <FormErrorMessage>
-                      {errors?.email?.message}
-                    </FormErrorMessage>
-                  ) : null}
+                  {renderContextError("email")}
                 </FormControl>
               </motion.div>
             )}
@@ -109,12 +116,9 @@ const SignIn = () => {
                     ref={ref}
                     key={name}
                     size="md"
+                    disabled={loading}
                   />
-                  {errors?.password ? (
-                    <FormErrorMessage>
-                      {errors?.password?.message}
-                    </FormErrorMessage>
-                  ) : null}
+                  {renderContextError("password")}
                 </FormControl>
               </motion.div>
             )}
@@ -126,10 +130,13 @@ const SignIn = () => {
             custom={3}
             animate={controls}
           >
-            <Checkbox size="md" colorScheme="teal">
+            <Checkbox size="md" colorScheme="teal" disabled={loading}>
               Ghi nhớ đăng nhập
             </Checkbox>
-            <Link to={PATH.PSW_RECOVER} className={s.redirect}>
+            <Link
+              to={PATH.PSW_RECOVER}
+              className={cx(s.redirect, { [s.disableLink]: loading })}
+            >
               Lấy lại mật khẩu
             </Link>
           </motion.div>
@@ -140,13 +147,19 @@ const SignIn = () => {
               size="md"
               onClick={handleSubmit(handleSubmitLogin)}
               width="100%"
+              disabled={loading}
             >
               Đăng nhập
             </Button>
           </motion.div>
 
           <motion.div initial={initPlace} custom={1} animate={controls}>
-            <Button colorScheme="teal" variant="outline" width="100%">
+            <Button
+              colorScheme="teal"
+              variant="outline"
+              width="100%"
+              disabled={loading}
+            >
               Đăng nhập với Google
             </Button>
           </motion.div>
@@ -154,7 +167,10 @@ const SignIn = () => {
           <motion.div initial={initPlace} custom={0} animate={controls}>
             <Text fontSize="sm" textAlign="center">
               Chưa có tài khoản hãy{" "}
-              <Link to={PATH.SIGN_UP} className={s.redirect}>
+              <Link
+                to={PATH.SIGN_UP}
+                className={cx(s.redirect, { [s.disableLink]: loading })}
+              >
                 Đăng ký
               </Link>
             </Text>
