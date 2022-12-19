@@ -44,3 +44,7 @@
     }
     
 }
+
+.disableLink {
+    pointer-events: none !important;
+}
