@@ -1,4 +1,4 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Image,
@@ -10,7 +10,7 @@ import {
   Input,
   Button,
 } from "@chakra-ui/react";
-import { startTransition, useCallback, useState } from "react";
+import { KeyboardEvent, useCallback, useEffect } from "react";
 import cx from "clsx";
 
 import AuthForm from "../../components/AuthForm";
@@ -24,13 +24,17 @@ import PasswordVerification from "./PasswordVerification";
 
 const SignUp = () => {
   const createAccount = useAccountStore((state) => state.createAccount);
+  const clearErrors = useAccountStore((state) => state.clearErrors);
+  const googleSignin = useAccountStore((state) => state.googleSignin);
+  const resError = useAccountStore((state) => state.errors);
   const loading = useAccountStore((state) => state.loading);
-  const [password, setPassword] = useState("");
 
   const {
     handleSubmit,
     formState: { errors },
-    control,
+    register,
+    watch,
+    setError,
   } = useForm<SignUpBody>({
     mode: "all",
     resolver: zodResolver(signUpSchema),
@@ -40,6 +44,8 @@ const SignUp = () => {
       confirmPassword: "",
     },
   });
+
+  const passwordWatch = watch("password");
 
   const handleSignUp = (data: SignUpBody) => {
     const { confirmPassword, ...rest } = data;
@@ -53,6 +59,23 @@ const SignUp = () => {
       ) : null,
     [errors]
   );
+
+  const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmit(handleSignUp);
+    }
+  };
+
+  useEffect(() => {
+    if (resError && resError.includes("Email đã tồn")) {
+      setError("email", {
+        message: resError,
+      });
+    }
+    return () => {
+      clearErrors();
+    };
+  }, [clearErrors, resError, setError]);
 
   return (
     <AuthForm>
@@ -69,73 +92,42 @@ const SignUp = () => {
           </Text>
         </div>
         <Stack spacing={4} direction="column">
-          <Controller
-            name="email"
-            control={control}
-            render={({ field: { name, onChange, ref } }) => (
-              <div>
-                <FormControl isInvalid={!!errors?.email}>
-                  <FormLabel>Email</FormLabel>
-                  <Input
-                    type="email"
-                    name={name}
-                    onChange={onChange}
-                    ref={ref}
-                    key={name}
-                    size="md"
-                  />
-                  {renderContextError("email")}
-                </FormControl>
-              </div>
-            )}
-          />
-
-          <Controller
-            name="password"
-            control={control}
-            render={({ field: { name, onChange, ref } }) => (
-              <div>
-                <FormControl isInvalid={!!errors?.password}>
-                  <FormLabel>Mật khẩu</FormLabel>
-                  <Input
-                    type="password"
-                    name={name}
-                    onChange={(e) => {
-                      startTransition(() => setPassword(e.target.value));
-                      onChange(e);
-                    }}
-                    ref={ref}
-                    key={name}
-                    size="md"
-                  />
-                </FormControl>
-              </div>
-            )}
-          />
-
-          <Controller
-            name="confirmPassword"
-            control={control}
-            render={({ field: { name, onChange, ref } }) => (
-              <div>
-                <FormControl isInvalid={!!errors?.confirmPassword}>
-                  <FormLabel>Mật khẩu xác nhận</FormLabel>
-                  <Input
-                    type="password"
-                    name={name}
-                    onChange={onChange}
-                    ref={ref}
-                    key={name}
-                    size="md"
-                  />
-                  {renderContextError("confirmPassword")}
-                </FormControl>
-              </div>
-            )}
-          />
+          <div>
+            <FormControl isInvalid={!!errors?.email}>
+              <FormLabel htmlFor="email"> Email</FormLabel>
+              <Input id="email" type="email" size="md" {...register("email")} />
+              {renderContextError("email")}
+            </FormControl>
+          </div>
 
           <div>
-            <PasswordVerification password={password} />
+            <FormControl isInvalid={!!errors?.password}>
+              <FormLabel htmlFor="password">Mật khẩu</FormLabel>
+              <Input
+                id="password"
+                type="password"
+                size="md"
+                {...register("password")}
+              />
+            </FormControl>
+          </div>
+
+          <div>
+            <FormControl isInvalid={!!errors?.confirmPassword}>
+              <FormLabel htmlFor="confirmPassword">Mật khẩu xác nhận</FormLabel>
+              <Input
+                id="confirmPassword"
+                type="password"
+                size="md"
+                {...register("confirmPassword")}
+                onKeyDown={handleEnter}
+              />
+              {renderContextError("confirmPassword")}
+            </FormControl>
+          </div>
+
+          <div>
+            <PasswordVerification password={passwordWatch} />
           </div>
 
           <div>
@@ -156,6 +148,7 @@ const SignUp = () => {
               variant="outline"
               width="100%"
               disabled={loading}
+              onClick={googleSignin}
             >
               Đăng nhập với Google
             </Button>

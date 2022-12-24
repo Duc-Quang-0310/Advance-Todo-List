@@ -1,4 +1,4 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   FormControl,
   FormLabel,
@@ -11,7 +11,7 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { motion, useAnimationControls } from "framer-motion";
-import { useCallback, useLayoutEffect } from "react";
+import { KeyboardEvent, useCallback, useEffect, useLayoutEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import cx from "clsx";
 
@@ -27,7 +27,10 @@ import { LOGO } from "../../images/images.const";
 
 const SignIn = () => {
   const login = useAccountStore((state) => state.login);
+  const clearErrors = useAccountStore((state) => state.clearErrors);
+  const googleSignin = useAccountStore((state) => state.googleSignin);
   const loading = useAccountStore((state) => state.loading);
+  const resError = useAccountStore((state) => state.errors);
   const controls = useAnimationControls();
 
   const initPlace = {
@@ -37,7 +40,8 @@ const SignIn = () => {
   const {
     handleSubmit,
     formState: { errors },
-    control,
+    register,
+    setError,
   } = useForm<LoginBody>({
     mode: "all",
     resolver: zodResolver(loginSchema),
@@ -57,12 +61,38 @@ const SignIn = () => {
     [errors]
   );
 
+  const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmit(handleSubmitLogin);
+    }
+  };
+
   useLayoutEffect(() => {
     controls.start((i) => ({
       transform: "translateY(0px)",
       transition: { delay: i * 0.1, duration: i * 0.2 },
     }));
   }, [controls]);
+
+  useEffect(() => {
+    if (resError) {
+      if (resError.includes("Email")) {
+        setError("email", {
+          message: resError,
+        });
+      }
+
+      if (resError.includes("Mật khẩu")) {
+        setError("password", {
+          message: resError,
+        });
+      }
+    }
+
+    return () => {
+      clearErrors();
+    };
+  }, [clearErrors, resError, setError]);
 
   return (
     <AuthForm>
@@ -79,50 +109,34 @@ const SignIn = () => {
           </Text>
         </motion.div>
         <Stack spacing={4} direction="column">
-          <Controller
-            name="email"
-            control={control}
-            render={({ field: { name, onChange, ref } }) => (
-              <motion.div initial={initPlace} custom={5} animate={controls}>
-                <FormControl isInvalid={!!errors?.email}>
-                  <FormLabel>Email</FormLabel>
-                  <Input
-                    type="email"
-                    name={name}
-                    onChange={onChange}
-                    ref={ref}
-                    key={name}
-                    disabled={loading}
-                    size="md"
-                  />
-                  {renderContextError("email")}
-                </FormControl>
-              </motion.div>
-            )}
-          />
+          <motion.div initial={initPlace} custom={5} animate={controls}>
+            <FormControl isInvalid={!!errors?.email}>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <Input
+                id="email"
+                type="email"
+                disabled={loading}
+                size="md"
+                {...register("email")}
+              />
+              {renderContextError("email")}
+            </FormControl>
+          </motion.div>
 
-          <Controller
-            name="password"
-            key="password"
-            control={control}
-            render={({ field: { name, onChange, ref } }) => (
-              <motion.div initial={initPlace} custom={4} animate={controls}>
-                <FormControl isInvalid={!!errors?.password}>
-                  <FormLabel>Mật khẩu</FormLabel>
-                  <Input
-                    type="password"
-                    name={name}
-                    onChange={onChange}
-                    ref={ref}
-                    key={name}
-                    size="md"
-                    disabled={loading}
-                  />
-                  {renderContextError("password")}
-                </FormControl>
-              </motion.div>
-            )}
-          />
+          <motion.div initial={initPlace} custom={4} animate={controls}>
+            <FormControl isInvalid={!!errors?.password}>
+              <FormLabel htmlFor="password">Mật khẩu</FormLabel>
+              <Input
+                id="password"
+                type="password"
+                size="md"
+                disabled={loading}
+                {...register("password")}
+                onKeyDown={handleEnter}
+              />
+              {renderContextError("password")}
+            </FormControl>
+          </motion.div>
 
           <motion.div
             className={s.additionalBox}
@@ -159,6 +173,7 @@ const SignIn = () => {
               variant="outline"
               width="100%"
               disabled={loading}
+              onClick={googleSignin}
             >
               Đăng nhập với Google
             </Button>
