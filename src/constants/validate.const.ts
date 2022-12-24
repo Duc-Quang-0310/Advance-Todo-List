@@ -14,6 +14,7 @@ export const loginSchema: z.ZodType<LoginBody> = z.object({
     .string({ required_error: "Mật khẩu không được bỏ trống" })
     .min(1, { message: "Mật khẩu không được bỏ trống" })
     .max(30, { message: "Mật khẩu quá dài vui lòng nhập lại" })
+    .regex(passwordRegex, "Mật khẩu không đúng định dạng đăng ký ")
     .trim(),
 });
 
