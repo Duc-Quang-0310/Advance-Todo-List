@@ -11,7 +11,14 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { motion, useAnimationControls } from "framer-motion";
-import { KeyboardEvent, useCallback, useEffect, useLayoutEffect } from "react";
+import {
+  ChangeEvent,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import cx from "clsx";
 
@@ -32,6 +39,7 @@ const SignIn = () => {
   const loading = useAccountStore((state) => state.loading);
   const resError = useAccountStore((state) => state.errors);
   const controls = useAnimationControls();
+  const [checkedRemember, setCheckedRemember] = useState(true);
 
   const initPlace = {
     transform: "translateY(-600px)",
@@ -42,6 +50,7 @@ const SignIn = () => {
     formState: { errors },
     register,
     setError,
+    setValue,
   } = useForm<LoginBody>({
     mode: "all",
     resolver: zodResolver(loginSchema),
@@ -51,7 +60,16 @@ const SignIn = () => {
     },
   });
 
-  const handleSubmitLogin = (body: LoginBody) => login(body);
+  const handleSubmitLogin = (body: LoginBody) => {
+    if (checkedRemember) {
+      localStorage.setItem(
+        "savedAccount",
+        JSON.stringify({ email: body.email, password: body.password })
+      );
+    }
+
+    login(body);
+  };
 
   const renderContextError = useCallback(
     (field: keyof LoginBody) =>
@@ -63,8 +81,12 @@ const SignIn = () => {
 
   const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleSubmit(handleSubmitLogin);
+      handleSubmit(handleSubmitLogin)();
     }
+  };
+
+  const onChangeCheckBox = (e: ChangeEvent<HTMLInputElement>) => {
+    setCheckedRemember(e.target.checked);
   };
 
   useLayoutEffect(() => {
@@ -93,6 +115,16 @@ const SignIn = () => {
       clearErrors();
     };
   }, [clearErrors, resError, setError]);
+
+  useEffect(() => {
+    const savedInfo = localStorage.getItem("savedAccount");
+
+    if (savedInfo) {
+      const { email = "", password = "" } = JSON.parse(savedInfo);
+      setValue("email", email);
+      setValue("password", password);
+    }
+  }, [setValue]);
 
   return (
     <AuthForm>
@@ -144,7 +176,13 @@ const SignIn = () => {
             custom={3}
             animate={controls}
           >
-            <Checkbox size="md" colorScheme="teal" disabled={loading}>
+            <Checkbox
+              size="md"
+              colorScheme="teal"
+              disabled={loading}
+              onChange={onChangeCheckBox}
+              defaultChecked={checkedRemember}
+            >
               Ghi nhớ đăng nhập
             </Checkbox>
             <Link
