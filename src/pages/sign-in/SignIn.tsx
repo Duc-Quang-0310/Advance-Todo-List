@@ -32,6 +32,7 @@ import { PATH } from "../../constants/path.const";
 import useAccountStore from "../../zustand/useAccountStore";
 import { LOGO } from "../../images/images.const";
 import { showSignInMobileModal, SignInMobileModal } from "./SignInPhoneNumber";
+import { initPlace } from "../../constants/utils.const";
 
 const SignIn = () => {
   const login = useAccountStore((state) => state.login);
@@ -42,10 +43,6 @@ const SignIn = () => {
   const resError = useAccountStore((state) => state.errors);
   const controls = useAnimationControls();
   const [checkedRemember, setCheckedRemember] = useState(true);
-
-  const initPlace = {
-    transform: "translateY(-600px)",
-  };
 
   const {
     handleSubmit,
