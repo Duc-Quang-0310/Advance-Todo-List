@@ -48,27 +48,26 @@ export const signUpSchema = z
     });
   });
 
-export const loginByPhoneSchema = z
-  .object({
-    telephone: z.string({
-      required_error: "Số điện thoại không được bỏ trống",
-    }),
-    // .regex(phoneNumberRegex, "Chưa đúng dạng của số điện thoại"),
-    verifyCode: z.string().optional(),
-  })
-  .superRefine(({ telephone, verifyCode }, ctx) => {
-    if (!telephone) {
-      return;
-    }
+export const loginByPhoneSchema = z.object({
+  telephone: z.string({
+    required_error: "Số điện thoại không được bỏ trống",
+  }),
+  // .regex(phoneNumberRegex, "Chưa đúng dạng của số điện thoại"),
+  verifyCode: z.string().optional(),
+});
+// .superRefine(({ telephone, verifyCode }, ctx) => {
+//   if (!telephone) {
+//     return;
+//   }
 
-    if (!verifyCode) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["verifyCode"],
-        message: "Mã xác nhận không được để trống",
-      });
-    }
-  });
+//   if (!verifyCode) {
+//     ctx.addIssue({
+//       code: "custom",
+//       path: ["verifyCode"],
+//       message: "Mã xác nhận không được để trống",
+//     });
+//   }
+// });
 
 export type SignUpBody = z.infer<typeof signUpSchema>;
 export type LoginByPhoneBody = z.infer<typeof loginByPhoneSchema>;

@@ -79,6 +79,7 @@ const SignInPhoneNumberComponent = forwardRef((_, ref) => {
   });
 
   const telephoneWatch = watch("telephone");
+  const codeWatch = watch("verifyCode");
 
   const handleCloseModal = useCallback(() => {
     onClose();
@@ -94,12 +95,19 @@ const SignInPhoneNumberComponent = forwardRef((_, ref) => {
           setResult(confirmRes);
         }
       } else {
+        if (!codeWatch) {
+          setLoading(false);
+          return setError("verifyCode", {
+            message: "Mã xác nhận không được để trống",
+          });
+        }
+
         const res = await result.confirm(String(data?.verifyCode));
         verificationLoginPhone(res.user);
       }
       setLoading(false);
     },
-    [loginWithPhoneNumber, result, verificationLoginPhone]
+    [codeWatch, loginWithPhoneNumber, result, setError, verificationLoginPhone]
   );
 
   useWindowListener((e) => {

@@ -251,6 +251,10 @@ const useAccountStore = create<AccountStore>()(
             applicationVerifier
           );
 
+          toastSuccess({
+            title: "Mã xác nhận đã được gửi đi hãy kiểm tra điện thoại",
+          });
+
           return confirmationResult;
         } catch (error: any) {
           if (
