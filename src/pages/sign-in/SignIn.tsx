@@ -31,11 +31,13 @@ import { Link } from "react-router-dom";
 import { PATH } from "../../constants/path.const";
 import useAccountStore from "../../zustand/useAccountStore";
 import { LOGO } from "../../images/images.const";
+import { showSignInMobileModal, SignInMobileModal } from "./SignInPhoneNumber";
 
 const SignIn = () => {
   const login = useAccountStore((state) => state.login);
   const clearErrors = useAccountStore((state) => state.clearErrors);
   const googleSignin = useAccountStore((state) => state.googleSignin);
+
   const loading = useAccountStore((state) => state.loading);
   const resError = useAccountStore((state) => state.errors);
   const controls = useAnimationControls();
@@ -89,10 +91,14 @@ const SignIn = () => {
     setCheckedRemember(e.target.checked);
   };
 
+  const handleLoginMobile = () => {
+    showSignInMobileModal();
+  };
+
   useLayoutEffect(() => {
     controls.start((i) => ({
       transform: "translateY(0px)",
-      transition: { delay: i * 0.1, duration: i * 0.2 },
+      transition: { delay: i * 0.08, duration: i * 0.18 },
     }));
   }, [controls]);
 
@@ -129,7 +135,7 @@ const SignIn = () => {
   return (
     <AuthForm>
       <section className={s.form}>
-        <motion.div initial={initPlace} custom={6} animate={controls}>
+        <motion.div initial={initPlace} custom={7} animate={controls}>
           <Image
             borderRadius="full"
             boxSize="70px"
@@ -141,7 +147,7 @@ const SignIn = () => {
           </Text>
         </motion.div>
         <Stack spacing={4} direction="column">
-          <motion.div initial={initPlace} custom={5} animate={controls}>
+          <motion.div initial={initPlace} custom={6} animate={controls}>
             <FormControl isInvalid={!!errors?.email}>
               <FormLabel htmlFor="email">Email</FormLabel>
               <Input
@@ -155,7 +161,7 @@ const SignIn = () => {
             </FormControl>
           </motion.div>
 
-          <motion.div initial={initPlace} custom={4} animate={controls}>
+          <motion.div initial={initPlace} custom={5} animate={controls}>
             <FormControl isInvalid={!!errors?.password}>
               <FormLabel htmlFor="password">Mật khẩu</FormLabel>
               <Input
@@ -173,7 +179,7 @@ const SignIn = () => {
           <motion.div
             className={s.additionalBox}
             initial={initPlace}
-            custom={3}
+            custom={4}
             animate={controls}
           >
             <Checkbox
@@ -193,7 +199,7 @@ const SignIn = () => {
             </Link>
           </motion.div>
 
-          <motion.div initial={initPlace} custom={2} animate={controls}>
+          <motion.div initial={initPlace} custom={3} animate={controls}>
             <Button
               colorScheme="teal"
               size="md"
@@ -202,6 +208,18 @@ const SignIn = () => {
               disabled={loading}
             >
               Đăng nhập
+            </Button>
+          </motion.div>
+
+          <motion.div initial={initPlace} custom={2} animate={controls}>
+            <Button
+              colorScheme="green"
+              variant="solid"
+              width="100%"
+              disabled={loading}
+              onClick={handleLoginMobile}
+            >
+              Đăng nhập qua số điện thoại
             </Button>
           </motion.div>
 
@@ -229,6 +247,8 @@ const SignIn = () => {
             </Text>
           </motion.div>
         </Stack>
+
+        <SignInMobileModal />
       </section>
     </AuthForm>
   );

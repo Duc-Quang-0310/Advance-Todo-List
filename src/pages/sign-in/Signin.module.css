@@ -48,3 +48,9 @@
 .disableLink {
     pointer-events: none !important;
 }
+
+.mobileMethod {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
