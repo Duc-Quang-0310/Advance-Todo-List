@@ -1,6 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "@firebase/firestore";
-import { initializeAuth } from "firebase/auth";
+import {
+  initializeAuth,
+  browserSessionPersistence,
+  browserPopupRedirectResolver,
+} from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -15,7 +19,10 @@ const firebaseConfig = {
 
 // Initialize Firebase
 export const firebaseApp = initializeApp(firebaseConfig);
-export const firebaseAuth = initializeAuth(firebaseApp);
+export const firebaseAuth = initializeAuth(firebaseApp, {
+  persistence: browserSessionPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver,
+});
 export const firestore = getFirestore(firebaseApp);
 
 export default getAnalytics(firebaseApp);

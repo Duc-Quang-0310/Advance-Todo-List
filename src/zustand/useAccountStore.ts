@@ -56,7 +56,7 @@ const defaultErrorLog =
       message = "Email không tồn tại";
     }
 
-    if (!e.message) {
+    if (!message) {
       message = "Có lỗi xảy ra vui lòng thử lại sau";
     }
 
@@ -102,7 +102,9 @@ const useAccountStore: AccountStore = create((set) => ({
       .then(async (response) => {
         const { user } = response;
         toastSuccess({
-          title: `Chào mừng quay trở lại ${user.displayName}`,
+          title: `Chào mừng quay trở lại ${
+            user.displayName || email.split("@")[0]
+          }`,
         });
         const currentToken = await user.getIdToken();
         set((state) => ({
@@ -135,7 +137,9 @@ const useAccountStore: AccountStore = create((set) => ({
       .then(async (response) => {
         const { user } = response;
         toastSuccess({
-          title: `Chúc bạn có một ngày tốt lành, ${user.displayName}`,
+          title: `Chúc bạn có một ngày tốt lành, ${
+            user.displayName || email.split("@")[0]
+          }`,
         });
         const currentToken = await user.getIdToken();
         set((state) => ({
@@ -181,8 +185,30 @@ const useAccountStore: AccountStore = create((set) => ({
 
     set((state) => ({ ...state, loading: true, errors: "" }));
     signInWithPopup(currentFirebaseAuth, google)
-      .then((user) => {
-        console.log(user);
+      .then(async (response) => {
+        const { user } = response;
+        toastSuccess({
+          title: `Chúc bạn có một ngày tốt lành, ${user.displayName}`,
+        });
+        const currentToken = await user.getIdToken();
+        set((state) => ({
+          ...state,
+          firebaseToken: currentToken,
+          userInfo: {
+            email: user.email,
+            userID: user.providerId || user.uid,
+            displayName: user.displayName,
+            avatar: user.photoURL,
+            provider: {
+              data: user.providerData,
+              id: user.providerId,
+            },
+            metadata: user.metadata,
+            isAnonymus: user.isAnonymous,
+            phoneNumber: user.phoneNumber,
+            isEmailVerified: user.emailVerified,
+          },
+        }));
       })
       .catch(defaultErrorLog("login", set))
       .finally(() => {
