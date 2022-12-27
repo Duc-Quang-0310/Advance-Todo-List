@@ -4,6 +4,8 @@ import { LoginBody } from "../zustand/type";
 export const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,30}$/;
 
+export const phoneNumberRegex = /^\+[1-9]\d{1,14}$/;
+
 export const loginSchema: z.ZodType<LoginBody> = z.object({
   email: z
     .string({ required_error: "Email không được bỏ trống" })
@@ -46,4 +48,27 @@ export const signUpSchema = z
     });
   });
 
+export const loginByPhoneSchema = z
+  .object({
+    telephone: z.string({
+      required_error: "Số điện thoại không được bỏ trống",
+    }),
+    // .regex(phoneNumberRegex, "Chưa đúng dạng của số điện thoại"),
+    verifyCode: z.string().optional(),
+  })
+  .superRefine(({ telephone, verifyCode }, ctx) => {
+    if (!telephone) {
+      return;
+    }
+
+    if (!verifyCode) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["verifyCode"],
+        message: "Mã xác nhận không được để trống",
+      });
+    }
+  });
+
 export type SignUpBody = z.infer<typeof signUpSchema>;
+export type LoginByPhoneBody = z.infer<typeof loginByPhoneSchema>;
