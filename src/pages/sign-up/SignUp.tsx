@@ -10,8 +10,9 @@ import {
   Input,
   Button,
 } from "@chakra-ui/react";
-import { KeyboardEvent, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useLayoutEffect } from "react";
 import cx from "clsx";
+import { useAnimationControls, motion } from "framer-motion";
 
 import AuthForm from "../../components/AuthForm";
 import { LOGO } from "../../images/images.const";
@@ -21,8 +22,10 @@ import { Link } from "react-router-dom";
 import { PATH } from "../../constants/path.const";
 import useAccountStore from "../../zustand/useAccountStore";
 import PasswordVerification from "./PasswordVerification";
+import { initPlace } from "../../constants/utils.const";
 
 const SignUp = () => {
+  const controls = useAnimationControls();
   const createAccount = useAccountStore((state) => state.createAccount);
   const clearErrors = useAccountStore((state) => state.clearErrors);
   const googleSignin = useAccountStore((state) => state.googleSignin);
@@ -60,11 +63,12 @@ const SignUp = () => {
     [errors]
   );
 
-  const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSubmit(handleSignUp);
-    }
-  };
+  useLayoutEffect(() => {
+    controls.start((i) => ({
+      transform: "translateY(0px)",
+      transition: { delay: i * 0.1, duration: i * 0.2 },
+    }));
+  }, [controls]);
 
   useEffect(() => {
     if (resError && resError.includes("Email đã tồn")) {
@@ -80,7 +84,7 @@ const SignUp = () => {
   return (
     <AuthForm>
       <section className={s.form}>
-        <div>
+        <motion.div initial={initPlace} custom={6} animate={controls}>
           <Image
             borderRadius="full"
             boxSize="70px"
@@ -90,17 +94,17 @@ const SignUp = () => {
           <Text fontSize="md" textAlign="left" opacity={0.6} fontWeight={600}>
             Tạo tài khoản mới tại Tu đu lít
           </Text>
-        </div>
+        </motion.div>
         <Stack spacing={4} direction="column">
-          <div>
+          <motion.div initial={initPlace} custom={5} animate={controls}>
             <FormControl isInvalid={!!errors?.email}>
               <FormLabel htmlFor="email"> Email</FormLabel>
               <Input id="email" type="email" size="md" {...register("email")} />
               {renderContextError("email")}
             </FormControl>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div initial={initPlace} custom={4} animate={controls}>
             <FormControl isInvalid={!!errors?.password}>
               <FormLabel htmlFor="password">Mật khẩu</FormLabel>
               <Input
@@ -110,9 +114,9 @@ const SignUp = () => {
                 {...register("password")}
               />
             </FormControl>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div initial={initPlace} custom={3} animate={controls}>
             <FormControl isInvalid={!!errors?.confirmPassword}>
               <FormLabel htmlFor="confirmPassword">Mật khẩu xác nhận</FormLabel>
               <Input
@@ -120,17 +124,16 @@ const SignUp = () => {
                 type="password"
                 size="md"
                 {...register("confirmPassword")}
-                onKeyDown={handleEnter}
               />
               {renderContextError("confirmPassword")}
             </FormControl>
-          </div>
+          </motion.div>
 
           <div>
             <PasswordVerification password={passwordWatch} />
           </div>
 
-          <div>
+          <motion.div initial={initPlace} custom={2} animate={controls}>
             <Button
               colorScheme="teal"
               size="md"
@@ -140,9 +143,9 @@ const SignUp = () => {
             >
               Đăng ký
             </Button>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div initial={initPlace} custom={1} animate={controls}>
             <Button
               colorScheme="teal"
               variant="outline"
@@ -152,9 +155,9 @@ const SignUp = () => {
             >
               Đăng nhập với Google
             </Button>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div initial={initPlace} custom={0} animate={controls}>
             <Text fontSize="sm" textAlign="center">
               Đã có tài khoản hãy{" "}
               <Link
@@ -164,7 +167,7 @@ const SignUp = () => {
                 Đăng nhập
               </Link>
             </Text>
-          </div>
+          </motion.div>
         </Stack>
       </section>
     </AuthForm>

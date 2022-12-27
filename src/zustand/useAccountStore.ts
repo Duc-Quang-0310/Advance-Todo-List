@@ -228,7 +228,11 @@ const useAccountStore = create<AccountStore>()(
       requestPasswordReset: ({ email }) => {
         set((state) => ({ ...state, loading: true, errors: "" }));
         sendPasswordResetEmail(currentFirebaseAuth, email)
-          .then(() => {})
+          .then(() => {
+            toastSuccess({
+              title: `Đã gửi thư đến email: ${email}, hãy kiểm tra hòm thư`,
+            });
+          })
           .catch(defaultErrorLog("psw-recover", set))
           .finally(() => {
             set((state) => ({ ...state, loading: false }));

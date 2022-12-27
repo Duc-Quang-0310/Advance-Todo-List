@@ -69,5 +69,13 @@ export const loginByPhoneSchema = z.object({
 //   }
 // });
 
+export const PSWRecoverSchema = z.object({
+  email: z
+    .string({ required_error: "Email không được bỏ trống" })
+    .email({ message: "Chưa phải dạng email vui lòng nhập lại" })
+    .trim()
+    .min(1, { message: "Email không được bỏ trống" }),
+});
+
 export type SignUpBody = z.infer<typeof signUpSchema>;
 export type LoginByPhoneBody = z.infer<typeof loginByPhoneSchema>;
