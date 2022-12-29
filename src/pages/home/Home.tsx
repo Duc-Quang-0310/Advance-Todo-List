@@ -1,5 +1,8 @@
+import { useWeather } from "../../hooks/useWeather";
+
 const Home = () => {
-  return <div>Home</div>;
+  const { getWeatherByRange } = useWeather();
+  return <div onClick={() => getWeatherByRange({})}>Home</div>;
 };
 
 export default Home;
