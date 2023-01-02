@@ -3,6 +3,6 @@ export const WEB_MESSAGE = {
 };
 
 export const queryKey = {
-  WEATHER_FORECAST_TODAY: "weatherForecastToday",
+  WEATHER_FORECAST_DAY: "weatherForecastDay",
   WEATHER_FORECAST_RANGE: "weatherForecastRange",
 };

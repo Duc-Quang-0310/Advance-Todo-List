@@ -1,9 +1,32 @@
-import { useAdsblock } from "./hooks/useAdsblock";
 import { Kbd } from "@chakra-ui/react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Suspense } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
+
+import { useAdsblock } from "./hooks/useAdsblock";
 import { Routers } from "./config/router";
 import { PATH } from "./constants/path.const";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 function App() {
   const { hasAdblock } = useAdsblock();
