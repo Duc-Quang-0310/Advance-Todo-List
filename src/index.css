@@ -43,3 +43,7 @@ body {
 .mt-1 {
   margin-top: 1rem;
 }
+
+.basicWrapper {
+  min-height: 100vh;
+}
