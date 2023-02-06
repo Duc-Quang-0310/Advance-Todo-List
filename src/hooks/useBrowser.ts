@@ -4,7 +4,7 @@ import { PATH } from "../constants/path.const";
 export const useBrowser = () => {
   const navigate = useNavigate();
   const params = useParams();
-  const { search: routeSearch, state: routeState } = useLocation();
+  const { search: routeSearch, state: routeState, pathname } = useLocation();
 
   const pushHome = () => {
     navigate(PATH.HOME);
@@ -38,7 +38,12 @@ export const useBrowser = () => {
     navigate(PATH.PSW_RECOVER);
   };
 
+  const pushProfile = () => {
+    navigate(PATH.USER_PROFILE);
+  };
+
   return {
+    pathname,
     params,
     routeSearch,
     routeState,
@@ -50,5 +55,6 @@ export const useBrowser = () => {
     pushSignIn,
     pushSignUp,
     pushPSWRecover,
+    pushProfile,
   };
 };

@@ -1,6 +1,12 @@
 import { Kbd } from "@chakra-ui/react";
 import { Suspense } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+} from "react-router-dom";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +21,10 @@ import {
 
 import { useAdsblock } from "./hooks/useAdsblock";
 import { Routers } from "./config/router";
-import { PATH } from "./constants/path.const";
+import { HIDDEN_MENU_PATH, PATH } from "./constants/path.const";
+import NavigationMenu from "./components/Navigation/NavigationMenu";
+import LoadingFallBack from "./components/LoadingFallBack/LoadingFallBack";
+import useAccountStore from "./zustand/useAccountStore";
 
 ChartJS.register(
   CategoryScale,
@@ -30,6 +39,7 @@ ChartJS.register(
 
 function App() {
   const { hasAdblock } = useAdsblock();
+  const userInfo = useAccountStore((state) => state.userInfo);
 
   if (hasAdblock) {
     return (
@@ -41,22 +51,41 @@ function App() {
   }
 
   return (
-    <Suspense fallback={<div />}>
-      <BrowserRouter>
-        <Routes>
-          {Routers().map(({ component, path, preRenderFunc }) => (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={userInfo ? PATH.HOME : PATH.SIGN_IN} />}
+        />
+
+        {Routers()?.length > 0 &&
+          Routers().map(({ component, path, preRenderFunc }) => (
             <Route
-              element={component}
-              path={path}
-              action={preRenderFunc}
+              path=""
+              element={
+                HIDDEN_MENU_PATH.includes(path) ? (
+                  <Suspense fallback={<LoadingFallBack />}>
+                    <Outlet />
+                  </Suspense>
+                ) : (
+                  <NavigationMenu />
+                )
+              }
               key={path}
-              id={path}
-            />
+            >
+              <Route
+                element={component}
+                path={path}
+                action={preRenderFunc}
+                key={path + crypto.randomUUID()}
+                id={path}
+              />
+            </Route>
           ))}
-          <Route path="*" element={<Navigate to={PATH.NOT_FOUND} />} />
-        </Routes>
-      </BrowserRouter>
-    </Suspense>
+
+        <Route path="*" element={<Navigate to={PATH.NOT_FOUND} />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

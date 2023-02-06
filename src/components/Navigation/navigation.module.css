@@ -1,0 +1,10 @@
+.activeNavBlock::before {
+    content:"";
+    position: absolute;
+    left: 0;
+    width: 5px;
+    height: 20px;
+    background-color: #2F855A;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}

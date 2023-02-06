@@ -37,6 +37,7 @@ import {
 
 import s from "./Signin.module.css";
 import { ConfirmationResult } from "firebase/auth";
+import { useBrowser } from "../../hooks/useBrowser";
 
 type ModalRef = {
   showMobileSignInModal: () => void;
@@ -48,7 +49,7 @@ const SignInPhoneNumberComponent = forwardRef((_, ref) => {
       onOpen();
     },
   }));
-
+  const { pushHome } = useBrowser();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ConfirmationResult | null>();
@@ -103,11 +104,18 @@ const SignInPhoneNumberComponent = forwardRef((_, ref) => {
         }
 
         const res = await result.confirm(String(data?.verifyCode));
-        verificationLoginPhone(res.user);
+        verificationLoginPhone(res.user, () => setTimeout(pushHome, 400));
       }
       setLoading(false);
     },
-    [codeWatch, loginWithPhoneNumber, result, setError, verificationLoginPhone]
+    [
+      codeWatch,
+      loginWithPhoneNumber,
+      pushHome,
+      result,
+      setError,
+      verificationLoginPhone,
+    ]
   );
 
   useWindowListener((e) => {

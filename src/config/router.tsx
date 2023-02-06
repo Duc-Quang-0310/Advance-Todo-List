@@ -5,8 +5,9 @@ import useAccountStore from "../zustand/useAccountStore";
 
 interface Router {
   component: ReactNode;
-  path: string;
+  path: PATH;
   preRenderFunc?: ActionFunction;
+  showNavigation?: boolean;
 }
 
 const NotFoundPage = lazy(() => import("../pages/404/404Page"));

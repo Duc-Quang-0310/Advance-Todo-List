@@ -68,14 +68,13 @@ const Weather = () => {
 
   const weatherInfo = useMemo(() => {
     const hourlyOfDaily = weatherToday?.hourly;
-
-    const dateFormatAPI = format(
+    const dateFormat = format(
       startOfHour(selectedDate),
       "yyyy-MM-dd HH:00"
     ).replace(" ", "T");
 
     const currentTimeInTimeArr = hourlyOfDaily?.time?.findIndex(
-      (i) => i === dateFormatAPI
+      (i) => i === dateFormat
     );
 
     const humidity =
@@ -85,16 +84,16 @@ const Weather = () => {
       ) || 0;
 
     const rain =
-      hourlyOfDaily?.rain?.reduce((prev, current = 0) => prev + current, 0) ||
-      0;
+      hourlyOfDaily?.rain?.reduce((prev, current) => prev + current, 0) || 0;
 
     return {
       humidity: Math.round(
         humidity / (hourlyOfDaily?.relativehumidity_2m?.length || 1) || 0
       ),
       rain: Math.round(rain / (hourlyOfDaily?.rain?.length || 1) || 0),
-      temperture:
-        hourlyOfDaily?.temperature_2m?.[currentTimeInTimeArr || 0] || 0,
+      temperture: currentTimeInTimeArr
+        ? hourlyOfDaily?.temperature_2m?.[currentTimeInTimeArr]
+        : 0,
     };
   }, [selectedDate, weatherToday?.hourly]);
 
@@ -107,7 +106,13 @@ const Weather = () => {
 
     const reSelectDate = (stringDate: string) => () => {
       if (stringDate) {
-        setSelectedDate(new Date(stringDate));
+        const hour = format(new Date(), "yyyy-MM-dd HH:mm").split(" ")[1];
+        const date = format(
+          startOfHour(new Date(stringDate)),
+          "yyyy-MM-dd HH:00"
+        ).split(" ")[0];
+        const formatedDate = new Date(`${date}T${hour}`);
+        setSelectedDate(formatedDate);
       }
     };
 

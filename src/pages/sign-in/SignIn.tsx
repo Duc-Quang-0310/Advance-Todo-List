@@ -33,11 +33,13 @@ import useAccountStore from "../../zustand/useAccountStore";
 import { LOGO } from "../../images/images.const";
 import { showSignInMobileModal, SignInMobileModal } from "./SignInPhoneNumber";
 import { initPlace } from "../../constants/utils.const";
+import { useBrowser } from "../../hooks/useBrowser";
 
 const SignIn = () => {
   const login = useAccountStore((state) => state.login);
   const clearErrors = useAccountStore((state) => state.clearErrors);
   const googleSignin = useAccountStore((state) => state.googleSignin);
+  const { pushHome } = useBrowser();
 
   const loading = useAccountStore((state) => state.loading);
   const resError = useAccountStore((state) => state.errors);
@@ -59,6 +61,10 @@ const SignIn = () => {
     },
   });
 
+  const handleGotoHome = useCallback(() => {
+    setTimeout(pushHome, 400);
+  }, [pushHome]);
+
   const handleSubmitLogin = (body: LoginBody) => {
     if (checkedRemember) {
       localStorage.setItem(
@@ -67,7 +73,7 @@ const SignIn = () => {
       );
     }
 
-    login(body);
+    login(body, handleGotoHome);
   };
 
   const renderContextError = useCallback(
@@ -226,7 +232,7 @@ const SignIn = () => {
               variant="outline"
               width="100%"
               disabled={loading}
-              onClick={googleSignin}
+              onClick={() => googleSignin(handleGotoHome)}
             >
               Đăng nhập với Google
             </Button>
