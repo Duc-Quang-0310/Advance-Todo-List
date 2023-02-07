@@ -4,7 +4,11 @@ import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { AiOutlinePlus } from "react-icons/ai";
 
 import { StrictModeDroppable } from "../../../components/Droppable/StrictModeDroppable";
-import { MOCK_COL_LABEL, DropableType } from "../../../constants/utils.const";
+import {
+  MOCK_COL_LABEL,
+  DropableType,
+  KanbanCol,
+} from "../../../constants/utils.const";
 import { getKanBanDragResult, swap } from "../../../helper/utils.helper";
 import Column from "./components/Column";
 
@@ -20,8 +24,24 @@ const KanbanMode: FC = () => {
       }
 
       if (type === DropableType.BOARD) {
-        const newList = swap([...kanban], source.index, destination.index);
-        return setKanban(newList);
+        let oldKanban: KanbanCol[] = [];
+
+        if (source.index === 0 && destination.index === kanban?.length - 1) {
+          const defaultKanban = [...kanban];
+          defaultKanban.shift();
+          oldKanban = [...defaultKanban, kanban[0]];
+        } else if (
+          source.index === kanban?.length - 1 &&
+          destination.index === 0
+        ) {
+          const defaultKanban = [...kanban];
+          defaultKanban.pop();
+          oldKanban = [kanban[kanban?.length - 1], ...defaultKanban];
+        } else {
+          oldKanban = swap([...kanban], source.index, destination.index);
+        }
+
+        return setKanban(oldKanban);
       }
       const newKanban = getKanBanDragResult(kanban, source, destination);
 
@@ -44,6 +64,7 @@ const KanbanMode: FC = () => {
           row: [],
         },
         label: "New Column",
+        labelColor: "pink",
       },
     ]);
   };
@@ -62,28 +83,27 @@ const KanbanMode: FC = () => {
 
   return (
     <SlideFade in>
-      <Box mt="5">
-        <DragDropContext onDragEnd={onDragEnd}>
-          <StrictModeDroppable
-            droppableId={DropableType.BOARD}
-            type={DropableType.BOARD}
-            direction="horizontal"
-            isCombineEnabled
-          >
-            {({ droppableProps, innerRef, placeholder }) => (
-              <Box display="flex" ref={innerRef} {...droppableProps}>
-                {kanban?.map((col, index) => (
-                  <Column key={col.id} index={index} kanbanColData={col} />
-                ))}
-                {placeholder}
-                <Button onClick={handleAddColumn} background="blackAlpha.200">
-                  <AiOutlinePlus />
-                </Button>
-              </Box>
-            )}
-          </StrictModeDroppable>
-        </DragDropContext>
-      </Box>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <StrictModeDroppable
+          droppableId={DropableType.BOARD}
+          type={DropableType.BOARD}
+          key={DropableType.BOARD}
+          direction="horizontal"
+          isCombineEnabled
+        >
+          {({ droppableProps, innerRef, placeholder }) => (
+            <Box display="flex" ref={innerRef} {...droppableProps}>
+              {kanban?.map((col, index) => (
+                <Column key={col.id} index={index} kanbanColData={col} />
+              ))}
+              {placeholder}
+              <Button onClick={handleAddColumn} background="blackAlpha.200">
+                <AiOutlinePlus />
+              </Button>
+            </Box>
+          )}
+        </StrictModeDroppable>
+      </DragDropContext>
     </SlideFade>
   );
 };

@@ -114,7 +114,7 @@ const AppHeader: FC = () => {
           mr="2"
         />
         <Text fontWeight="600" fontSize="18px" color="green.400">
-          {temparatureToday} °C
+          {temparatureToday || "..."} °C
         </Text>
       </Box>
       <Text

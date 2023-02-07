@@ -35,6 +35,7 @@ export interface KanbanCol {
   label: string;
   id: string;
   colData: ColData;
+  labelColor: string;
 }
 
 export interface KanbanData {
@@ -42,51 +43,9 @@ export interface KanbanData {
   colData: ColData;
 }
 
-export const MOCK_DATA_KANBAN = [
-  {
-    colData: [
-      {
-        label: "label 1",
-        key: crypto.randomUUID(),
-      },
-      {
-        label: "label 2",
-        key: crypto.randomUUID(),
-      },
-    ],
-    key: crypto.randomUUID(),
-  },
-  {
-    colData: [
-      {
-        label: "label 3",
-        key: crypto.randomUUID(),
-      },
-      {
-        label: "label 4",
-        key: crypto.randomUUID(),
-      },
-    ],
-    key: crypto.randomUUID(),
-  },
-  {
-    colData: [
-      {
-        label: "label 5",
-        key: crypto.randomUUID(),
-      },
-      {
-        label: "label 6",
-        key: crypto.randomUUID(),
-      },
-    ],
-    key: crypto.randomUUID(),
-  },
-];
-
 export const MOCK_COL_LABEL: KanbanCol[] = [
   {
-    label: "To do",
+    label: "Cần làm",
     id: "To do",
     colData: {
       row: [
@@ -101,9 +60,10 @@ export const MOCK_COL_LABEL: KanbanCol[] = [
       ],
       id: crypto.randomUUID(),
     },
+    labelColor: "green",
   },
   {
-    label: "In progress",
+    label: "Đang Tiến Hành",
     id: "In progress",
     colData: {
       row: [
@@ -118,9 +78,10 @@ export const MOCK_COL_LABEL: KanbanCol[] = [
       ],
       id: crypto.randomUUID(),
     },
+    labelColor: "purple",
   },
   {
-    label: "Done",
+    label: "Kết thúc",
     id: "Done",
     colData: {
       row: [
@@ -135,6 +96,7 @@ export const MOCK_COL_LABEL: KanbanCol[] = [
       ],
       id: crypto.randomUUID(),
     },
+    labelColor: "red",
   },
 ];
 

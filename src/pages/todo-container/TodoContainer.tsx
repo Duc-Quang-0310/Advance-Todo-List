@@ -1,12 +1,12 @@
-import { Container, Box, ButtonGroup, Button, Tooltip } from "@chakra-ui/react";
+import { Box, ButtonGroup, Button, Tooltip, Icon } from "@chakra-ui/react";
 import { MdTableChart } from "react-icons/md";
-import { BsKanban } from "react-icons/bs";
+import { BsKanban, BsFillPlusSquareFill } from "react-icons/bs";
 
-import BasicContainer from "../../components/Container/BasicContainer";
 import { WatchMode } from "../../constants/utils.const";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import KanbanMode from "./KanbanMode/KanbanMode";
 import TableMode from "./TableMode/TableMode";
+import AddTaskModal from "./AddTaskModal/AddTaskModal";
 
 const ButtonMode = [
   {
@@ -23,6 +23,7 @@ const ButtonMode = [
 
 const TodoContainer = () => {
   const [viewMode, setViewMode] = useState(WatchMode.KANBAN);
+  const [openModal, setOpenModal] = useState(false);
 
   const modeRender = useMemo(() => {
     switch (viewMode) {
@@ -39,10 +40,18 @@ const TodoContainer = () => {
     setViewMode(mode);
   }
 
+  const handleClickAdd = useCallback(() => {
+    setOpenModal(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setOpenModal(false);
+  }, []);
+
   return (
-    <Container maxW="container.xl" pt="6">
+    <Box pt="4" px="3" height="100%" w="100%">
       <Box display="flex">
-        <ButtonGroup spacing="3" ml="auto">
+        <ButtonGroup spacing="3">
           {ButtonMode.map(({ icon, mode, message }) => (
             <Tooltip
               key={mode}
@@ -62,9 +71,24 @@ const TodoContainer = () => {
             </Tooltip>
           ))}
         </ButtonGroup>
+
+        <Button
+          rightIcon={<Icon as={BsFillPlusSquareFill} />}
+          colorScheme="teal"
+          variant="solid"
+          ml="auto"
+          onClick={handleClickAdd}
+        >
+          Thêm mới
+        </Button>
       </Box>
-      <Box mt="3">{modeRender}</Box>
-    </Container>
+      <Box mt="5">{modeRender}</Box>
+      <AddTaskModal
+        isOpen={openModal}
+        key={crypto.randomUUID()}
+        handleClose={handleCloseModal}
+      />
+    </Box>
   );
 };
 

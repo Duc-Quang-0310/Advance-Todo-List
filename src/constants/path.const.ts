@@ -16,4 +16,5 @@ export const HIDDEN_MENU_PATH = [
   PATH.SIGN_UP,
   PATH.PSW_RECOVER,
   PATH.SIGN_IN,
+  // PATH.TODO,
 ];
