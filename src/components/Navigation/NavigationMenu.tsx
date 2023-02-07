@@ -131,7 +131,6 @@ const NavigationMenu: FC = () => {
         width="240px"
         borderRight="3px solid RGBA(0, 0, 0, 0.16)"
         boxShadow="inner"
-        zIndex="9999"
         px="3"
         py="5"
         background="blackAlpha.100"
@@ -202,7 +201,7 @@ const NavigationMenu: FC = () => {
       </Box>
       <Box flex={1}>
         <AppHeader />
-        <Box height="calc(100vh - 40px )" overflowY="scroll">
+        <Box height="calc(100vh - 40px)" width="calc(100vw - 240px)">
           <Suspense fallback={<LoadingFallBack />}>
             <Outlet />
           </Suspense>
