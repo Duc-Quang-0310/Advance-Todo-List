@@ -23,6 +23,7 @@ import { PATH } from "../../constants/path.const";
 import useAccountStore from "../../zustand/useAccountStore";
 import PasswordVerification from "./PasswordVerification";
 import { initPlace } from "../../constants/utils.const";
+import { useBrowser } from "../../hooks/useBrowser";
 
 const SignUp = () => {
   const controls = useAnimationControls();
@@ -31,6 +32,7 @@ const SignUp = () => {
   const googleSignin = useAccountStore((state) => state.googleSignin);
   const resError = useAccountStore((state) => state.errors);
   const loading = useAccountStore((state) => state.loading);
+  const { pushHome } = useBrowser();
 
   const {
     handleSubmit,
@@ -151,7 +153,7 @@ const SignUp = () => {
               variant="outline"
               width="100%"
               disabled={loading}
-              onClick={googleSignin}
+              onClick={() => googleSignin(() => setTimeout(pushHome, 400))}
             >
               Đăng nhập với Google
             </Button>

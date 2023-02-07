@@ -1,5 +1,5 @@
 export enum PATH {
-  HOME = "/",
+  HOME = "/home",
   NOT_FOUND = "/not-found",
   DASHBOARD = "/dashboard",
   USER_CUSTOMIZE = "/user-customize",
@@ -10,3 +10,10 @@ export enum PATH {
   PSW_RECOVER = "/psw-recover",
   TODO_DETAIL = "/todo-detail",
 }
+
+export const HIDDEN_MENU_PATH = [
+  PATH.NOT_FOUND,
+  PATH.SIGN_UP,
+  PATH.PSW_RECOVER,
+  PATH.SIGN_IN,
+];

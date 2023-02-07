@@ -19,6 +19,7 @@ import AuthForm from "../../components/AuthForm";
 import { PATH } from "../../constants/path.const";
 import { initPlace } from "../../constants/utils.const";
 import { PSWRecoverSchema } from "../../constants/validate.const";
+import { useBrowser } from "../../hooks/useBrowser";
 import { LOGO } from "../../images/images.const";
 import { LoginBody } from "../../zustand/type";
 import useAccountStore from "../../zustand/useAccountStore";
@@ -34,6 +35,7 @@ const PSWRecover = () => {
   const requestPasswordReset = useAccountStore(
     (state) => state.requestPasswordReset
   );
+  const { pushHome } = useBrowser();
 
   const {
     handleSubmit,
@@ -123,7 +125,7 @@ const PSWRecover = () => {
               variant="outline"
               width="100%"
               disabled={loading}
-              onClick={googleSignin}
+              onClick={() => googleSignin(() => setTimeout(pushHome, 400))}
             >
               Đăng nhập với Google
             </Button>

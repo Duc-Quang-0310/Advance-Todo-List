@@ -1,0 +1,25 @@
+.hoverItem  {
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center ;
+    align-items: center;
+    transition: background 0.1s ease-in !important;
+}
+
+.hoverItem:hover {
+    background: RGBA(0, 0, 0, 0.26);
+}
+
+.hoverTitle {
+    user-select: none;
+    padding-inline: 5px;
+    transition: all 0.2s ease-in !important;
+}
+
+.hoverTitle:hover {
+    background: #ffffff;
+    color:#38A169;
+    letter-spacing: 2px;
+}

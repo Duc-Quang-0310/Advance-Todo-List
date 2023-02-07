@@ -29,16 +29,17 @@ interface AccountStore {
   userObject: User | null;
   errors: string;
   logout: () => void;
-  login: (body: LoginBody) => void;
+  login: (body: LoginBody, onSuccess: () => void) => void;
   createAccount: (body: LoginBody) => void;
   changePassword: (body: ChangePasswordBody) => void;
   clearErrors: () => void;
-  googleSignin: () => void;
+  googleSignin: (onSuccess?: () => void) => void;
   requestPasswordReset: (params: Pick<LoginBody, "email">) => void;
   loginWithPhoneNumber: (
     params: LoginByPhoneBody
   ) => Promise<ConfirmationResult | null>;
-  verificationLoginPhone: (userInfo: User) => void;
+  verificationLoginPhone: (userInfo: User, onSuccess?: () => void) => void;
+  clearAccountStore: () => void;
 }
 
 export const currentFirebaseAuth = getAuth(firebaseApp);
@@ -105,7 +106,7 @@ const useAccountStore = create<AccountStore>()(
             set((state) => ({ ...state, loading: false }));
           });
       },
-      login: async ({ email, password }) => {
+      login: async ({ email, password }, onSuccess) => {
         set((state) => ({ ...state, loading: true, errors: "" }));
         signInWithEmailAndPassword(currentFirebaseAuth, email, password)
           .then(async (response) => {
@@ -134,6 +135,7 @@ const useAccountStore = create<AccountStore>()(
                 isEmailVerified: user.emailVerified,
               },
             }));
+            onSuccess?.();
           })
           .catch(defaultErrorLog("login", set))
           .finally(() => {
@@ -190,7 +192,7 @@ const useAccountStore = create<AccountStore>()(
       },
       clearErrors: () =>
         set((state) => ({ ...state, loading: false, errors: "" })),
-      googleSignin: async () => {
+      googleSignin: async (onSuccess) => {
         const google = new GoogleAuthProvider();
 
         set((state) => ({ ...state, loading: true, errors: "" }));
@@ -219,6 +221,7 @@ const useAccountStore = create<AccountStore>()(
                 isEmailVerified: user.emailVerified,
               },
             }));
+            onSuccess?.();
           })
           .catch(defaultErrorLog("login", set))
           .finally(() => {
@@ -275,7 +278,7 @@ const useAccountStore = create<AccountStore>()(
           return null;
         }
       },
-      verificationLoginPhone: async (user) => {
+      verificationLoginPhone: async (user, onSuccess) => {
         toastSuccess({
           title: `Chào mừng quay trở lại ${user.displayName || ""}`,
         });
@@ -298,6 +301,18 @@ const useAccountStore = create<AccountStore>()(
             isEmailVerified: user.emailVerified,
           },
         }));
+
+        onSuccess?.();
+      },
+      clearAccountStore: () => {
+        set({
+          firebaseToken: "",
+          userInfo: null,
+          mode: "dark",
+          loading: false,
+          userObject: null,
+          errors: "",
+        });
       },
     })),
     {

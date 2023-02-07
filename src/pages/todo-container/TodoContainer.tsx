@@ -40,33 +40,31 @@ const TodoContainer = () => {
   }
 
   return (
-    <BasicContainer>
-      <Container maxW="container.xl">
-        <Box display="flex">
-          <ButtonGroup spacing="3" ml="auto">
-            {ButtonMode.map(({ icon, mode, message }) => (
-              <Tooltip
-                key={mode}
-                label={message}
-                bg="blackAlpha.700"
-                px="3"
-                py="1"
+    <Container maxW="container.xl" pt="6">
+      <Box display="flex">
+        <ButtonGroup spacing="3" ml="auto">
+          {ButtonMode.map(({ icon, mode, message }) => (
+            <Tooltip
+              key={mode}
+              label={message}
+              bg="blackAlpha.700"
+              px="3"
+              py="1"
+            >
+              <Button
+                colorScheme="teal"
+                variant={viewMode === mode ? "solid" : "ghost"}
+                paddingInline={4}
+                onClick={() => handleChangeMode(mode)}
               >
-                <Button
-                  colorScheme="teal"
-                  variant={viewMode === mode ? "solid" : "ghost"}
-                  paddingInline={4}
-                  onClick={() => handleChangeMode(mode)}
-                >
-                  {icon}
-                </Button>
-              </Tooltip>
-            ))}
-          </ButtonGroup>
-        </Box>
-        <Box mt="3">{modeRender}</Box>
-      </Container>
-    </BasicContainer>
+                {icon}
+              </Button>
+            </Tooltip>
+          ))}
+        </ButtonGroup>
+      </Box>
+      <Box mt="3">{modeRender}</Box>
+    </Container>
   );
 };
 
