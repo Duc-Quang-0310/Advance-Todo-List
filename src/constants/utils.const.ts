@@ -43,6 +43,21 @@ export interface KanbanData {
   colData: ColData;
 }
 
+export interface Tag {
+  label: string;
+  color: string;
+}
+
+export interface TableData {
+  id: string;
+  name: string;
+  stage: Tag;
+  tags: Tag[];
+  startDate: string;
+  endDate: string;
+  description: string;
+}
+
 export const MOCK_COL_LABEL: KanbanCol[] = [
   {
     label: "Cần làm",
@@ -97,6 +112,64 @@ export const MOCK_COL_LABEL: KanbanCol[] = [
       id: crypto.randomUUID(),
     },
     labelColor: "red",
+  },
+];
+
+export const TABLE_MOCK_DATA: TableData[] = [
+  {
+    id: "label 1",
+    name: "label 1",
+    tags: [
+      {
+        label: "label 1",
+        color: "green",
+      },
+    ],
+    stage: {
+      label: "Cần làm",
+      color: "green",
+    },
+    startDate: "",
+    endDate: "",
+    description: "",
+  },
+  {
+    id: "label 2",
+    name: "label 1",
+    tags: [
+      {
+        label: "label 1",
+        color: "green",
+      },
+      {
+        label: "label 2",
+        color: "red",
+      },
+    ],
+    stage: {
+      label: "Cần làm",
+      color: "green",
+    },
+    startDate: "",
+    endDate: "",
+    description: "",
+  },
+  {
+    id: "label 3",
+    name: "label 1",
+    tags: [
+      {
+        label: "label 1",
+        color: "green",
+      },
+    ],
+    stage: {
+      label: "Cần làm",
+      color: "green",
+    },
+    startDate: "",
+    endDate: "",
+    description: "",
   },
 ];
 
