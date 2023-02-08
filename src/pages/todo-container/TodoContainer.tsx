@@ -1,12 +1,13 @@
-import { Container, Box, ButtonGroup, Button, Tooltip } from "@chakra-ui/react";
+import { Box, ButtonGroup, Button, Tooltip, Icon } from "@chakra-ui/react";
 import { MdTableChart } from "react-icons/md";
-import { BsKanban } from "react-icons/bs";
+import { BsKanban, BsFillPlusSquareFill } from "react-icons/bs";
 
-import BasicContainer from "../../components/Container/BasicContainer";
-import { WatchMode } from "../../constants/utils.const";
-import { useMemo, useState } from "react";
+import { MOCK_COL_LABEL, WatchMode } from "../../constants/utils.const";
+import { useCallback, useMemo, useState } from "react";
 import KanbanMode from "./KanbanMode/KanbanMode";
 import TableMode from "./TableMode/TableMode";
+import AddTaskModal from "./AddTaskModal/AddTaskModal";
+import { CreateTaskOrTypeBody } from "../../constants/validate.const";
 
 const ButtonMode = [
   {
@@ -23,26 +24,67 @@ const ButtonMode = [
 
 const TodoContainer = () => {
   const [viewMode, setViewMode] = useState(WatchMode.KANBAN);
+  const [openModal, setOpenModal] = useState(false);
+  const [data, setData] = useState<Partial<CreateTaskOrTypeBody>>();
+  const [kanban, setKanban] = useState(MOCK_COL_LABEL);
+
+  const handleClickAdd = useCallback(() => {
+    setOpenModal(true);
+    if (viewMode === WatchMode.KANBAN) {
+      return setData({
+        type: "tag",
+      });
+    }
+    setData({
+      type: "task",
+    });
+  }, [viewMode]);
+
+  const handleCloseModal = useCallback(() => {
+    setOpenModal(false);
+    setData({});
+  }, []);
 
   const modeRender = useMemo(() => {
     switch (viewMode) {
       case WatchMode.KANBAN:
-        return <KanbanMode />;
+        return (
+          <KanbanMode
+            handleAddNewCol={handleClickAdd}
+            kanban={kanban}
+            setKanban={setKanban}
+          />
+        );
       case WatchMode.TABLE:
         return <TableMode />;
       default:
         return null;
     }
-  }, [viewMode]);
+  }, [handleClickAdd, kanban, viewMode]);
 
-  function handleChangeMode(mode: WatchMode) {
+  const handleChangeMode = useCallback((mode: WatchMode) => {
     setViewMode(mode);
-  }
+  }, []);
+
+  const handleSubmitCreation = useCallback((form: CreateTaskOrTypeBody) => {
+    setKanban((prev) => [
+      ...prev,
+      {
+        id: form?.id || crypto.randomUUID(),
+        colData: {
+          id: crypto.randomUUID(),
+          row: [],
+        },
+        label: form.name || "New Column",
+        labelColor: form?.colorTag || "pink",
+      },
+    ]);
+  }, []);
 
   return (
-    <Container maxW="container.xl" pt="6">
+    <Box pt="4" px="3" height="100%" w="100%">
       <Box display="flex">
-        <ButtonGroup spacing="3" ml="auto">
+        <ButtonGroup spacing="3">
           {ButtonMode.map(({ icon, mode, message }) => (
             <Tooltip
               key={mode}
@@ -62,9 +104,26 @@ const TodoContainer = () => {
             </Tooltip>
           ))}
         </ButtonGroup>
+
+        <Button
+          rightIcon={<Icon as={BsFillPlusSquareFill} />}
+          colorScheme="teal"
+          variant="solid"
+          ml="auto"
+          onClick={handleClickAdd}
+        >
+          Thêm mới
+        </Button>
       </Box>
-      <Box mt="3">{modeRender}</Box>
-    </Container>
+      <Box mt="5">{modeRender}</Box>
+      <AddTaskModal
+        isOpen={openModal}
+        key={crypto.randomUUID()}
+        handleClose={handleCloseModal}
+        onSubmit={handleSubmitCreation}
+        data={data}
+      />
+    </Box>
   );
 };
 

@@ -77,5 +77,45 @@ export const PSWRecoverSchema = z.object({
     .min(1, { message: "Email không được bỏ trống" }),
 });
 
+export const CreateTaskOrTypeSchema = z
+  .object({
+    type: z.enum(["task", "tag"]),
+    id: z.string().trim().optional(),
+    name: z.string().trim().min(1, { message: "Tên không được bỏ trống" }),
+    description: z.string().trim().optional(),
+    colorTag: z.string().trim().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    innerTag: z.array(z.string()).optional(),
+  })
+  .superRefine(({ type, colorTag, endDate, startDate }, ctx) => {
+    if (type === "tag") {
+      if (!colorTag) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["colorTag"],
+          message: "Hãy chọn màu biểu thị giai đoạn",
+        });
+      }
+    } else {
+      if (!startDate) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["startDate"],
+          message: "Ngày bắt đầu không được để trống",
+        });
+      }
+
+      if (!endDate) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["endDate"],
+          message: "Ngày bắt đầu không được để trống",
+        });
+      }
+    }
+  });
+
 export type SignUpBody = z.infer<typeof signUpSchema>;
 export type LoginByPhoneBody = z.infer<typeof loginByPhoneSchema>;
+export type CreateTaskOrTypeBody = z.infer<typeof CreateTaskOrTypeSchema>;

@@ -9,4 +9,30 @@ const color = {
   humidity: "#2B6CB0",
 };
 
+export const TagColor = {
+  blue: "blue",
+  cyan: "cyan",
+  gray: "gray",
+  green: "green",
+  orange: "orange",
+  pink: "pink",
+  purple: "purple",
+  red: "red",
+  teal: "teal",
+  yellow: "yellow",
+};
+
+export const TAG_COLOR = [
+  "blue",
+  "cyan",
+  "gray",
+  "green",
+  "orange",
+  "pink",
+  "purple",
+  "red",
+  "teal",
+  "yellow",
+];
+
 export default color;

@@ -59,6 +59,7 @@ export function getKanBanDragResult(
         id: kanban?.colData?.id,
         row,
       },
+      labelColor: kanban?.labelColor,
     };
   });
 
@@ -94,6 +95,7 @@ export function getKanBanDragResult(
         id: newKanban[destinationColIndex]?.colData?.id,
         row: swappedData,
       },
+      labelColor: newKanban[destinationColIndex]?.labelColor,
     };
   } else {
     const startCol = destinationRowData.slice(0, destination?.index);
@@ -107,6 +109,7 @@ export function getKanBanDragResult(
         id: newKanban[destinationColIndex]?.colData?.id,
         row: newColumnData,
       },
+      labelColor: newKanban[destinationColIndex]?.labelColor,
     };
   }
 

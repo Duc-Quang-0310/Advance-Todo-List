@@ -29,9 +29,9 @@ function TaskList({ tasks }: TaskListProps) {
     >
       {({ droppableProps, innerRef, placeholder }, { isDraggingOver }) => (
         <Box
-          {...droppableProps}
           ref={innerRef}
           background={isDraggingOver ? "blue.100" : ""}
+          {...droppableProps}
         >
           {currentTasks?.length > 0 &&
             currentTasks?.map((task, index) => (
