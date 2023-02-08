@@ -1,20 +1,32 @@
 import { Box, Button, SlideFade } from "@chakra-ui/react";
-import { useCallback, FC, useState, useEffect } from "react";
+import {
+  useCallback,
+  FC,
+  useState,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { AiOutlinePlus } from "react-icons/ai";
 
 import { StrictModeDroppable } from "../../../components/Droppable/StrictModeDroppable";
-import {
-  MOCK_COL_LABEL,
-  DropableType,
-  KanbanCol,
-} from "../../../constants/utils.const";
+import { DropableType, KanbanCol } from "../../../constants/utils.const";
 import { getKanBanDragResult, swap } from "../../../helper/utils.helper";
 import Column from "./components/Column";
 
-const KanbanMode: FC = () => {
+interface KanbanModeProps {
+  handleAddNewCol: () => void;
+  kanban: KanbanCol[];
+  setKanban: Dispatch<SetStateAction<KanbanCol[]>>;
+}
+
+const KanbanMode: FC<KanbanModeProps> = ({
+  handleAddNewCol,
+  kanban,
+  setKanban,
+}) => {
   const [isChangingKanban, setIsChangingKanban] = useState(false);
-  const [kanban, setKanban] = useState(MOCK_COL_LABEL);
 
   const onDragEnd = useCallback(
     (dragResult: DropResult) => {
@@ -51,23 +63,8 @@ const KanbanMode: FC = () => {
       setIsChangingKanban(true);
       setKanban(newKanban);
     },
-    [kanban]
+    [kanban, setKanban]
   );
-
-  const handleAddColumn = () => {
-    setKanban((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        colData: {
-          id: crypto.randomUUID(),
-          row: [],
-        },
-        label: "New Column",
-        labelColor: "pink",
-      },
-    ]);
-  };
 
   useEffect(
     () => () => {
@@ -97,7 +94,7 @@ const KanbanMode: FC = () => {
                 <Column key={col.id} index={index} kanbanColData={col} />
               ))}
               {placeholder}
-              <Button onClick={handleAddColumn} background="blackAlpha.200">
+              <Button onClick={handleAddNewCol} background="blackAlpha.200">
                 <AiOutlinePlus />
               </Button>
             </Box>

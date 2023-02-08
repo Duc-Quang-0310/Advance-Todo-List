@@ -2,11 +2,12 @@ import { Box, ButtonGroup, Button, Tooltip, Icon } from "@chakra-ui/react";
 import { MdTableChart } from "react-icons/md";
 import { BsKanban, BsFillPlusSquareFill } from "react-icons/bs";
 
-import { WatchMode } from "../../constants/utils.const";
+import { MOCK_COL_LABEL, WatchMode } from "../../constants/utils.const";
 import { useCallback, useMemo, useState } from "react";
 import KanbanMode from "./KanbanMode/KanbanMode";
 import TableMode from "./TableMode/TableMode";
 import AddTaskModal from "./AddTaskModal/AddTaskModal";
+import { CreateTaskOrTypeBody } from "../../constants/validate.const";
 
 const ButtonMode = [
   {
@@ -24,28 +25,60 @@ const ButtonMode = [
 const TodoContainer = () => {
   const [viewMode, setViewMode] = useState(WatchMode.KANBAN);
   const [openModal, setOpenModal] = useState(false);
+  const [data, setData] = useState<Partial<CreateTaskOrTypeBody>>();
+  const [kanban, setKanban] = useState(MOCK_COL_LABEL);
+
+  const handleClickAdd = useCallback(() => {
+    setOpenModal(true);
+    if (viewMode === WatchMode.KANBAN) {
+      return setData({
+        type: "tag",
+      });
+    }
+    setData({
+      type: "task",
+    });
+  }, [viewMode]);
+
+  const handleCloseModal = useCallback(() => {
+    setOpenModal(false);
+    setData({});
+  }, []);
 
   const modeRender = useMemo(() => {
     switch (viewMode) {
       case WatchMode.KANBAN:
-        return <KanbanMode />;
+        return (
+          <KanbanMode
+            handleAddNewCol={handleClickAdd}
+            kanban={kanban}
+            setKanban={setKanban}
+          />
+        );
       case WatchMode.TABLE:
         return <TableMode />;
       default:
         return null;
     }
-  }, [viewMode]);
+  }, [handleClickAdd, kanban, viewMode]);
 
-  function handleChangeMode(mode: WatchMode) {
+  const handleChangeMode = useCallback((mode: WatchMode) => {
     setViewMode(mode);
-  }
-
-  const handleClickAdd = useCallback(() => {
-    setOpenModal(true);
   }, []);
 
-  const handleCloseModal = useCallback(() => {
-    setOpenModal(false);
+  const handleSubmitCreation = useCallback((form: CreateTaskOrTypeBody) => {
+    setKanban((prev) => [
+      ...prev,
+      {
+        id: form?.id || crypto.randomUUID(),
+        colData: {
+          id: crypto.randomUUID(),
+          row: [],
+        },
+        label: form.name || "New Column",
+        labelColor: form?.colorTag || "pink",
+      },
+    ]);
   }, []);
 
   return (
@@ -87,6 +120,8 @@ const TodoContainer = () => {
         isOpen={openModal}
         key={crypto.randomUUID()}
         handleClose={handleCloseModal}
+        onSubmit={handleSubmitCreation}
+        data={data}
       />
     </Box>
   );

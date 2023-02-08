@@ -8,57 +8,54 @@ import {
   ModalFooter,
   Button,
   Stack,
-  FormErrorMessage,
-  FormControl,
-  FormLabel,
-  Select,
-  Input,
-  Textarea,
   Collapse,
   Text,
   Box,
+  Alert,
+  AlertIcon,
+  Badge,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect } from "react";
 
 import {
   CreateTaskOrTypeBody,
   CreateTaskOrTypeSchema,
 } from "../../../constants/validate.const";
+import InputForm from "../../../components/Form/InputForm/InputForm";
+import TextAreaForm from "../../../components/Form/TextAreaForm/TextAreaForm";
+import SelectForm from "../../../components/Form/SelectForm/SelectForm";
+import { format } from "date-fns";
+import { TAG_COLOR } from "../../../constants/color.const";
 
 interface Props {
   isOpen: boolean;
   handleClose: () => void;
+  data?: Partial<CreateTaskOrTypeBody>;
+  onSubmit: (data: CreateTaskOrTypeBody) => void;
 }
 
-const AddTaskModal: FC<Props> = ({ handleClose, isOpen }) => {
+const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
   const {
     handleSubmit,
     formState: { errors },
     register,
     watch,
     reset,
+    setValue,
   } = useForm<CreateTaskOrTypeBody>({
     mode: "all",
     resolver: zodResolver(CreateTaskOrTypeSchema),
     defaultValues: {
       type: "task",
-      startDate: undefined,
+      startDate: format(new Date(), "yyyy-MM-dd"),
+      colorTag: TAG_COLOR[1],
     },
   });
 
-  console.log("errors", errors);
-
   const typeWatch = watch("type");
-
-  const renderContextError = useCallback(
-    (field: keyof CreateTaskOrTypeBody) =>
-      errors?.[field] ? (
-        <FormErrorMessage>{errors?.[field]?.message}</FormErrorMessage>
-      ) : null,
-    [errors]
-  );
+  const colorWatch = watch("colorTag");
 
   const handleCloseInternal = useCallback(() => {
     handleClose();
@@ -72,19 +69,45 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen }) => {
     );
   }, [handleClose, reset]);
 
-  const renderRequired = useCallback(
-    (label: string) => (
-      <Box display="flex">
-        {label}
-        <Text color="red.600" fontWeight="bold">
-          *
-        </Text>
-      </Box>
-    ),
-    []
+  console.log("e", errors);
+
+  const handleSubmitForm = useCallback(
+    (form: CreateTaskOrTypeBody) => {
+      onSubmit(form);
+      handleCloseInternal();
+    },
+    [handleCloseInternal, onSubmit]
   );
 
-  const handleSubmitForm = useCallback((form: CreateTaskOrTypeBody) => {}, []);
+  useEffect(() => {
+    const type = data?.type || "task";
+    const id = data?.id || crypto.randomUUID();
+    const name = data?.name || "";
+    const description = data?.description || "";
+    const colorTag = data?.colorTag || TAG_COLOR[1];
+    const startDate = data?.startDate || format(new Date(), "yyyy-MM-dd");
+    const endDate = data?.endDate || "";
+    const innerTag = data?.innerTag || [];
+
+    setValue("type", type);
+    setValue("id", id);
+    setValue("name", name);
+    setValue("description", description);
+    setValue("colorTag", colorTag);
+    setValue("startDate", startDate);
+    setValue("endDate", endDate);
+    setValue("innerTag", innerTag);
+  }, [
+    data?.colorTag,
+    data?.description,
+    data?.endDate,
+    data?.id,
+    data?.innerTag,
+    data?.name,
+    data?.startDate,
+    data?.type,
+    setValue,
+  ]);
 
   return (
     <Modal
@@ -96,99 +119,154 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen }) => {
     >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>
-          {typeWatch === "task" ? "Việc cần làm" : "Giai đoạn"}
+        <ModalHeader
+          backgroundColor="green.400"
+          color="white"
+          borderTopRadius="6px"
+          display="flex"
+          alignItems="center"
+          py="2"
+        >
+          <Text fontSize="lg">
+            {typeWatch === "task" ? "Việc cần làm" : "Giai đoạn"}
+          </Text>
+          <ModalCloseButton />
         </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
+        <ModalBody pt="5">
           <Stack spacing={2} direction="column">
-            {/* <-- Type --> */}
-            <FormControl isInvalid={!!errors?.type} display="flex">
-              <FormLabel htmlFor="telephone" w="150px">
-                Kiểu
-              </FormLabel>
-              <Select id="type" {...register("type")}>
-                <option value="task">Việc cần làm</option>
-                <option value="tag">Giai Đoạn</option>
-              </Select>
-            </FormControl>
-            {/* <-- Type --> */}
+            <SelectForm
+              errMessage={errors?.type?.message}
+              register={register}
+              label="Kiểu"
+              name="type"
+              displayType="inline"
+              options={[
+                {
+                  label: "Việc cần làm",
+                  value: "task",
+                },
+                {
+                  label: "Giai Đoạn",
+                  value: "tag",
+                },
+              ]}
+            />
 
-            {/* <-- Name --> */}
-            <FormControl isInvalid={!!errors?.name} display="flex">
-              <FormLabel htmlFor="name" w="150px">
-                {" "}
-                {renderRequired("Tên")}
-              </FormLabel>
-              <Input id="name" size="md" {...register("name")} />
-            </FormControl>
-            {renderContextError("name")}
-            {/* <-- Name --> */}
+            <InputForm
+              errMessage={errors?.name?.message}
+              register={register}
+              label="Tên"
+              name="name"
+              isRequired
+              displayType="inline"
+            />
 
-            {/* <-- Inner Tag --> */}
+            <TextAreaForm
+              errMessage={errors?.description?.message}
+              register={register}
+              label="Chú thích"
+              name="description"
+              displayType="inline"
+            />
+
             <Collapse in={typeWatch === "tag"} animateOpacity>
-              <FormControl isInvalid={!!errors?.colorTag} display="flex">
-                <FormLabel htmlFor="colorTag" w="150px">
-                  {renderRequired("Màu sắc")}
-                </FormLabel>
-                <Input id="colorTag" size="md" {...register("colorTag")} />
-                {renderContextError("colorTag")}
-              </FormControl>
-            </Collapse>
-            {/* <-- Inner Tag --> */}
+              <Box display="flex" mt="3">
+                <Text
+                  color="blackAlpha.600"
+                  fontSize="15px"
+                  w="130px"
+                  fontWeight="500"
+                >
+                  Màu sắc
+                </Text>
 
-            <Collapse in={typeWatch === "task"} animateOpacity>
-              <FormControl isInvalid={!!errors?.innerTag} display="flex">
-                <FormLabel htmlFor="innerTag" w="150px">
-                  Thẻ liên quan
-                </FormLabel>
-                <Input id="innerTag" size="md" {...register("innerTag")} />
-              </FormControl>
+                <Box display="flex" flex={1}>
+                  <Box
+                    boxSize="100px"
+                    background={colorWatch}
+                    boxShadow="md"
+                    borderRadius="5px"
+                    transition="all 0.2s ease-in"
+                  />
+                  <Box
+                    display="flex"
+                    flexWrap="wrap"
+                    flex={1}
+                    justifyContent="space-between"
+                    alignItems="center"
+                    pl="10"
+                  >
+                    {TAG_COLOR.map((color) => (
+                      <Box
+                        backgroundColor={color}
+                        key={color}
+                        width="40px"
+                        height="40px"
+                        borderRadius="5px"
+                        marginRight="2"
+                        position="relative"
+                        cursor="pointer"
+                        onClick={() => setValue("colorTag", color)}
+                      >
+                        {colorWatch === color ? (
+                          <Box
+                            position="absolute"
+                            boxSize="10px"
+                            backgroundColor="green.400"
+                            rounded="full"
+                            top="-0.5"
+                            right="-0.6"
+                          />
+                        ) : null}
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              </Box>
 
-              <FormControl
-                isInvalid={!!errors?.startDate}
+              <Alert
+                status="info"
+                mt="5"
                 display="flex"
-                py="2"
+                alignItems="center"
+                variant="solid"
               >
-                <FormLabel htmlFor="startDate" w="150px">
-                  {" "}
-                  Ngày bắt đầu
-                </FormLabel>
-                <Input
-                  id="startDate"
-                  size="md"
-                  type="datetime-local"
-                  disabled
-                  {...register("startDate")}
-                />
-              </FormControl>
-
-              <FormControl isInvalid={!!errors?.endDate} display="flex">
-                <FormLabel htmlFor="endDate" w="150px">
-                  {renderRequired("Ngày kết thúc")}
-                </FormLabel>
-                <Input
-                  id="endDate"
-                  size="md"
-                  type="datetime-local"
-                  {...register("endDate")}
-                />
-              </FormControl>
-              {renderContextError("endDate")}
+                <AlertIcon />
+                Giai đoạn của bạn sẽ trông như thế này:
+                <Badge colorScheme={colorWatch} ml="auto" fontSize="15px">
+                  Yeah
+                </Badge>
+              </Alert>
             </Collapse>
-
-            {/* <-- Description --> */}
-            <FormControl isInvalid={!!errors?.description} display="flex">
-              <FormLabel htmlFor="description" w="150px">
-                Chú thích
-              </FormLabel>
-              <Textarea
-                id="description"
-                size="md"
-                {...register("description")}
+            <Collapse in={typeWatch === "task"} animateOpacity>
+              <InputForm
+                errMessage={errors?.innerTag?.message}
+                register={register}
+                label="Thẻ liên quan"
+                name="innerTag"
+                displayType="inline"
               />
-            </FormControl>
-            {/* <-- Description --> */}
+
+              <InputForm
+                errMessage={errors?.startDate?.message}
+                register={register}
+                label="Ngày bắt đầu"
+                name="startDate"
+                displayType="inline"
+                type="date"
+                disable
+              />
+
+              <InputForm
+                errMessage={errors?.endDate?.message}
+                register={register}
+                label="Ngày kết thúc"
+                name="endDate"
+                isRequired
+                displayType="inline"
+                type="date"
+              />
+            </Collapse>
           </Stack>
         </ModalBody>
         <ModalFooter>
@@ -199,7 +277,13 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen }) => {
           >
             Tạo mới
           </Button>
-          <Button onClick={handleCloseInternal}>Hủy</Button>
+          <Button
+            onClick={handleCloseInternal}
+            variant="ghost"
+            color="blackAlpha.600"
+          >
+            Hủy
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

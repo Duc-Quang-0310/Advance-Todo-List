@@ -81,7 +81,7 @@ export const CreateTaskOrTypeSchema = z
   .object({
     type: z.enum(["task", "tag"]),
     id: z.string().trim().optional(),
-    name: z.string().trim(),
+    name: z.string().trim().min(1, { message: "Tên không được bỏ trống" }),
     description: z.string().trim().optional(),
     colorTag: z.string().trim().optional(),
     startDate: z.string().optional(),
@@ -89,7 +89,7 @@ export const CreateTaskOrTypeSchema = z
     innerTag: z.array(z.string()).optional(),
   })
   .superRefine(({ type, colorTag, endDate, startDate }, ctx) => {
-    if (type === "task") {
+    if (type === "tag") {
       if (!colorTag) {
         ctx.addIssue({
           code: "custom",
@@ -97,24 +97,22 @@ export const CreateTaskOrTypeSchema = z
           message: "Hãy chọn màu biểu thị giai đoạn",
         });
       }
+    } else {
+      if (!startDate) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["startDate"],
+          message: "Ngày bắt đầu không được để trống",
+        });
+      }
 
-      return;
-    }
-
-    if (!startDate) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["startDate"],
-        message: "Ngày bắt đầu không được để trống",
-      });
-    }
-
-    if (!endDate) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["endDate"],
-        message: "Ngày bắt đầu không được để trống",
-      });
+      if (!endDate) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["endDate"],
+          message: "Ngày bắt đầu không được để trống",
+        });
+      }
     }
   });
 
