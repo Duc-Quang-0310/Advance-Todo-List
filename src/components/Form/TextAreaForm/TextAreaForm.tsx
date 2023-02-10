@@ -1,4 +1,11 @@
-import { FormControl, FormLabel, Textarea, Text, Box } from "@chakra-ui/react";
+import {
+  FormControl,
+  FormLabel,
+  Textarea,
+  Text,
+  Box,
+  ChakraComponent,
+} from "@chakra-ui/react";
 import { FC, useCallback } from "react";
 import { UseFormRegister } from "react-hook-form";
 
@@ -10,6 +17,8 @@ interface Props {
   name: string;
   displayType?: "inline" | "block";
 }
+
+type TextAreaType = ChakraComponent<"textarea", Props>;
 
 const TextAreaForm: FC<Props> = ({
   label,
@@ -70,4 +79,4 @@ const TextAreaForm: FC<Props> = ({
   );
 };
 
-export default TextAreaForm;
+export default TextAreaForm as TextAreaType;

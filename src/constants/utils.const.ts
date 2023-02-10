@@ -58,6 +58,22 @@ export interface TableData {
   description: string;
 }
 
+export interface FilteredFields {
+  name: string;
+  tag: string[];
+  stage: string;
+  startDate: string;
+  endDate: string;
+}
+
+export const filterFields: FilteredFields = {
+  name: "",
+  tag: [],
+  stage: "",
+  startDate: "",
+  endDate: "",
+};
+
 export const MOCK_COL_LABEL: KanbanCol[] = [
   {
     label: "Cần làm",
