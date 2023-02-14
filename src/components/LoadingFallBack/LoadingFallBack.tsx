@@ -1,12 +1,15 @@
-import { Box, Spinner } from "@chakra-ui/react";
+import { Box, Spinner, ChakraComponent } from "@chakra-ui/react";
 
-const LoadingFallBack = () => (
+type BoxType = ChakraComponent<"input", {}>;
+
+const LoadingFallBack = ({ ...other }) => (
   <Box
     width="100%"
     justifyContent="center"
     display="flex"
     alignItems="center"
     height="calc(100vh - 40px)"
+    {...other}
   >
     <Spinner
       thickness="4px"
@@ -18,4 +21,4 @@ const LoadingFallBack = () => (
   </Box>
 );
 
-export default LoadingFallBack;
+export default LoadingFallBack as BoxType;

@@ -1,6 +1,5 @@
 import create from "zustand";
 import {
-  getAuth,
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -12,14 +11,18 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   ConfirmationResult,
+  AuthErrorCodes,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from "firebase/auth";
 import { devtools, persist } from "zustand/middleware";
-import { firebaseApp } from "../config/firebase";
+import { currentFirebaseAuth } from "../config/firebase";
 import { toastError, toastSuccess } from "../helper/toast";
 import { ChangePasswordBody, LoginBody, Userinfo } from "./type";
 import { ErrorData } from "@firebase/util";
 import { FirebaseErrorMessage } from "../constants/errorMessage.const";
 import { LoginByPhoneBody } from "../constants/validate.const";
+import { WEB_MESSAGE } from "../constants/message.const";
 
 interface AccountStore {
   firebaseToken: string;
@@ -40,9 +43,8 @@ interface AccountStore {
   ) => Promise<ConfirmationResult | null>;
   verificationLoginPhone: (userInfo: User, onSuccess?: () => void) => void;
   clearAccountStore: () => void;
+  setAccountStore: (params: Partial<AccountStore>) => void;
 }
-
-export const currentFirebaseAuth = getAuth(firebaseApp);
 
 const defaultErrorLog =
   (
@@ -50,22 +52,24 @@ const defaultErrorLog =
     set: Function
   ) =>
   (e: ErrorData) => {
+    console.log("String(e.message)", String(e.message));
+
     let message = "";
 
-    if (String(e.message)?.includes(FirebaseErrorMessage.MAIL_EXIST)) {
+    if (String(e.message)?.includes(AuthErrorCodes.EMAIL_EXISTS)) {
       message = "Email đã tồn tại vui lòng nhập email khác";
     }
 
-    if (String(e.message)?.includes(FirebaseErrorMessage.WRONG_PASSWORD)) {
+    if (String(e.message)?.includes(AuthErrorCodes.INVALID_PASSWORD)) {
       message = "Mật khẩu sai vui lòng nhập lại";
     }
 
-    if (String(e.message)?.includes(FirebaseErrorMessage.USER_NOT_FOUND)) {
+    if (String(e.message)?.includes(AuthErrorCodes.USER_DELETED)) {
       message = "Email không tồn tại";
     }
 
     if (!message) {
-      message = "Có lỗi xảy ra vui lòng thử lại sau";
+      message = WEB_MESSAGE.COMMON_ERROR;
     }
 
     set((state: AccountStore) => ({
@@ -177,8 +181,37 @@ const useAccountStore = create<AccountStore>()(
             set((state) => ({ ...state, loading: false }));
           });
       },
-      changePassword: ({ password, user }) => {
-        set((state) => ({ ...state, loading: true, errors: "" }));
+      changePassword: async ({ password, user, oldPassword }) => {
+        set((state) => ({ ...state, loading: false, errors: "" }));
+        const credential = EmailAuthProvider.credential(
+          user.email as string,
+          oldPassword
+        );
+
+        try {
+          if (currentFirebaseAuth && currentFirebaseAuth.currentUser !== null) {
+            await reauthenticateWithCredential(
+              currentFirebaseAuth.currentUser,
+              credential
+            );
+          }
+        } catch (error: any) {
+          console.log(error?.message);
+          if (
+            String(error.message)?.includes(AuthErrorCodes.INVALID_PASSWORD)
+          ) {
+            return set((state: AccountStore) => ({
+              ...state,
+              loading: false,
+              errors: "Mật khẩu sai vui lòng nhập lại",
+            }));
+          }
+
+          return toastError({
+            title: WEB_MESSAGE.COMMON_ERROR,
+          });
+        }
+
         updatePassword(user, password)
           .then((_response) => {
             toastSuccess({
@@ -301,7 +334,6 @@ const useAccountStore = create<AccountStore>()(
             isEmailVerified: user.emailVerified,
           },
         }));
-
         onSuccess?.();
       },
       clearAccountStore: () => {
@@ -310,10 +342,11 @@ const useAccountStore = create<AccountStore>()(
           userInfo: null,
           mode: "dark",
           loading: false,
-          userObject: null,
           errors: "",
         });
       },
+      setAccountStore: (params: Partial<AccountStore>) =>
+        set((state) => ({ ...state, ...params })),
     })),
     {
       name: "accountStore",

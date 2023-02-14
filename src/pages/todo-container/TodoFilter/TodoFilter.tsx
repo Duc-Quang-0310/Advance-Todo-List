@@ -50,11 +50,6 @@ const TodoFilter: FC<Props> = ({ handleUpdateFilter, filter: filterd }) => {
     };
   }, [filter?.stage]);
 
-  console.log(
-    "🚀 ~ file: TodoFilter.tsx:35 ~ filterData ~ filterData",
-    filterData
-  );
-
   const handleConfirm = useCallback(() => {
     handleUpdateFilter(filter);
     setIsOpen(false);
