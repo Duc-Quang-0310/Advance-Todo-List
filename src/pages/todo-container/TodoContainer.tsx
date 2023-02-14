@@ -1,7 +1,7 @@
 import { Box, ButtonGroup, Button, Tooltip, Icon } from "@chakra-ui/react";
 import { MdTableChart } from "react-icons/md";
 import { BsKanban, BsFillPlusSquareFill } from "react-icons/bs";
-import { useCallback, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 
 import {
   FilteredFields,
@@ -9,11 +9,13 @@ import {
   MOCK_COL_LABEL,
   WatchMode,
 } from "../../constants/utils.const";
-import KanbanMode from "./KanbanMode/KanbanMode";
-import TableMode from "./TableMode/TableMode";
 import AddTaskModal from "./AddTaskModal/AddTaskModal";
 import { CreateTaskOrTypeBody } from "../../constants/validate.const";
 import TodoFilter from "./TodoFilter/TodoFilter";
+import LoadingFallBack from "../../components/LoadingFallBack/LoadingFallBack";
+
+const KanbanMode = lazy(() => import("./KanbanMode/KanbanMode"));
+const TableMode = lazy(() => import("./TableMode/TableMode"));
 
 const ButtonMode = [
   {
@@ -141,7 +143,11 @@ const TodoContainer = () => {
           <TodoFilter handleUpdateFilter={handleUpdateFilter} filter={filter} />
         </ButtonGroup>
       </Box>
-      <Box mt="5">{modeRender}</Box>
+      <Box mt="5">
+        <Suspense fallback={<LoadingFallBack height="500px" />}>
+          {modeRender}
+        </Suspense>
+      </Box>
       <AddTaskModal
         isOpen={openModal}
         handleClose={handleCloseModal}

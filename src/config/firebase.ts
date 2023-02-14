@@ -4,6 +4,7 @@ import {
   initializeAuth,
   browserSessionPersistence,
   browserPopupRedirectResolver,
+  getAuth,
 } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
@@ -24,5 +25,6 @@ export const firebaseAuth = initializeAuth(firebaseApp, {
   popupRedirectResolver: browserPopupRedirectResolver,
 });
 export const firestore = getFirestore(firebaseApp);
+export const currentFirebaseAuth = getAuth(firebaseApp);
 
 export default getAnalytics(firebaseApp);

@@ -206,7 +206,10 @@ const SignIn = () => {
             <Button
               colorScheme="teal"
               size="md"
-              onClick={handleSubmit(handleSubmitLogin)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit(handleSubmitLogin)();
+              }}
               width="100%"
               disabled={loading}
             >

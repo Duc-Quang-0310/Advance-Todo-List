@@ -116,6 +116,36 @@ export const CreateTaskOrTypeSchema = z
     }
   });
 
+export const ChangePasswordSchema = z
+  .object({
+    oldPassword: z
+      .string({ required_error: "Mật khẩu không được bỏ trống" })
+      .regex(passwordRegex, { message: "Mật khẩu cũ không đúng định dạng" })
+      .trim(),
+    password: z
+      .string({ required_error: "Mật khẩu mới không được bỏ trống" })
+      .regex(passwordRegex, { message: "Mật khẩu mới không đúng định dạng" })
+      .trim(),
+    confirmPassword: z
+      .string({ required_error: "Mật khẩu xác nhận không được bỏ trống" })
+      .regex(passwordRegex, {
+        message: "Mật khẩu xác nhận không đúng định dạng",
+      })
+      .trim(),
+  })
+  .superRefine(({ confirmPassword, password }, ctx) => {
+    const testRes = passwordRegex.test(confirmPassword);
+    if (testRes && confirmPassword === password) {
+      return;
+    }
+    ctx.addIssue({
+      code: "custom",
+      path: ["confirmPassword"],
+      message: "Mật khẩu xác nhận không đúng",
+    });
+  });
+
 export type SignUpBody = z.infer<typeof signUpSchema>;
 export type LoginByPhoneBody = z.infer<typeof loginByPhoneSchema>;
 export type CreateTaskOrTypeBody = z.infer<typeof CreateTaskOrTypeSchema>;
+export type ChangePasswordForm = z.infer<typeof ChangePasswordSchema>;

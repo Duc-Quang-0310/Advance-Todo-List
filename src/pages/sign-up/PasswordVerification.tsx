@@ -6,9 +6,10 @@ import s from "./SignUp.module.css";
 
 interface Props {
   password: string;
+  defaultShow?: boolean;
 }
 
-const PasswordVerification: FC<Props> = ({ password }) => {
+const PasswordVerification: FC<Props> = ({ password, defaultShow = false }) => {
   const [passedArr, setPassedArr] = useState<Array<number>>([]);
 
   const renderIcon = useCallback(
@@ -55,7 +56,7 @@ const PasswordVerification: FC<Props> = ({ password }) => {
   }, [password]);
 
   return (
-    <Collapse in={!!password} animateOpacity>
+    <Collapse in={!defaultShow ? !!password : true} animateOpacity>
       <Stack spacing={2} direction="column" className={s.PasswordCheck}>
         <div className={s.item}>
           {renderIcon(1)}

@@ -46,7 +46,7 @@ const MOCKS_TAG = [
 const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
   const {
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     register,
     watch,
     reset,
@@ -307,6 +307,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
             colorScheme="green"
             mr={3}
             onClick={handleSubmit(handleSubmitForm)}
+            disabled={!isDirty}
           >
             Tạo mới
           </Button>
