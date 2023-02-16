@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { firebaseAuth } from "../config/firebase";
-import { WEB_MESSAGE } from "../constants/message.const";
 import { PATH } from "../constants/path.const";
 import useAccountStore from "../zustand/useAccountStore";
 
@@ -33,7 +32,6 @@ const useFirebaseAuth = () => {
           userObject: null,
           userInfo: null,
         });
-        alert(WEB_MESSAGE.LOGIN_EXPIRED);
         window.location.pathname = PATH.SIGN_IN;
       }
     });
