@@ -1,13 +1,21 @@
 import { Box, ButtonGroup, Button, Tooltip, Icon } from "@chakra-ui/react";
 import { MdTableChart } from "react-icons/md";
 import { BsKanban, BsFillPlusSquareFill } from "react-icons/bs";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 
-import { MOCK_COL_LABEL, WatchMode } from "../../constants/utils.const";
-import { useCallback, useMemo, useState } from "react";
-import KanbanMode from "./KanbanMode/KanbanMode";
-import TableMode from "./TableMode/TableMode";
+import {
+  FilteredFields,
+  filterFields,
+  MOCK_COL_LABEL,
+  WatchMode,
+} from "../../constants/utils.const";
 import AddTaskModal from "./AddTaskModal/AddTaskModal";
 import { CreateTaskOrTypeBody } from "../../constants/validate.const";
+import TodoFilter from "./TodoFilter/TodoFilter";
+import LoadingFallBack from "../../components/LoadingFallBack/LoadingFallBack";
+
+const KanbanMode = lazy(() => import("./KanbanMode/KanbanMode"));
+const TableMode = lazy(() => import("./TableMode/TableMode"));
 
 const ButtonMode = [
   {
@@ -27,6 +35,7 @@ const TodoContainer = () => {
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState<Partial<CreateTaskOrTypeBody>>();
   const [kanban, setKanban] = useState(MOCK_COL_LABEL);
+  const [filter, setFilter] = useState(filterFields);
 
   const handleClickAdd = useCallback(() => {
     setOpenModal(true);
@@ -45,13 +54,25 @@ const TodoContainer = () => {
     setData({});
   }, []);
 
+  const filteredKanban = useMemo(() => {
+    let oldKanban = [...kanban] || [];
+
+    const { stage } = filter;
+
+    if (stage) {
+      oldKanban = oldKanban.filter((each) => each.id === stage);
+    }
+
+    return oldKanban;
+  }, [filter, kanban]);
+
   const modeRender = useMemo(() => {
     switch (viewMode) {
       case WatchMode.KANBAN:
         return (
           <KanbanMode
             handleAddNewCol={handleClickAdd}
-            kanban={kanban}
+            kanban={filteredKanban}
             setKanban={setKanban}
           />
         );
@@ -60,7 +81,7 @@ const TodoContainer = () => {
       default:
         return null;
     }
-  }, [handleClickAdd, kanban, viewMode]);
+  }, [handleClickAdd, filteredKanban, viewMode]);
 
   const handleChangeMode = useCallback((mode: WatchMode) => {
     setViewMode(mode);
@@ -79,6 +100,10 @@ const TodoContainer = () => {
         labelColor: form?.colorTag || "pink",
       },
     ]);
+  }, []);
+
+  const handleUpdateFilter = useCallback((filter: FilteredFields) => {
+    setFilter(filter);
   }, []);
 
   return (
@@ -105,20 +130,26 @@ const TodoContainer = () => {
           ))}
         </ButtonGroup>
 
-        <Button
-          rightIcon={<Icon as={BsFillPlusSquareFill} />}
-          colorScheme="teal"
-          variant="solid"
-          ml="auto"
-          onClick={handleClickAdd}
-        >
-          Thêm mới
-        </Button>
+        <ButtonGroup ml="auto" spacing="3">
+          <Button
+            rightIcon={<Icon as={BsFillPlusSquareFill} />}
+            colorScheme="teal"
+            variant="solid"
+            onClick={handleClickAdd}
+            boxShadow="md"
+          >
+            Thêm mới
+          </Button>
+          <TodoFilter handleUpdateFilter={handleUpdateFilter} filter={filter} />
+        </ButtonGroup>
       </Box>
-      <Box mt="5">{modeRender}</Box>
+      <Box mt="5">
+        <Suspense fallback={<LoadingFallBack height="500px" />}>
+          {modeRender}
+        </Suspense>
+      </Box>
       <AddTaskModal
         isOpen={openModal}
-        key={crypto.randomUUID()}
         handleClose={handleCloseModal}
         onSubmit={handleSubmitCreation}
         data={data}

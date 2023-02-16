@@ -43,6 +43,37 @@ export interface KanbanData {
   colData: ColData;
 }
 
+export interface Tag {
+  label: string;
+  color: string;
+}
+
+export interface TableData {
+  id: string;
+  name: string;
+  stage: Tag;
+  tags: Tag[];
+  startDate: string;
+  endDate: string;
+  description: string;
+}
+
+export interface FilteredFields {
+  name: string;
+  tag: string[];
+  stage: string;
+  startDate: string;
+  endDate: string;
+}
+
+export const filterFields: FilteredFields = {
+  name: "",
+  tag: [],
+  stage: "",
+  startDate: "",
+  endDate: "",
+};
+
 export const MOCK_COL_LABEL: KanbanCol[] = [
   {
     label: "Cần làm",
@@ -100,4 +131,77 @@ export const MOCK_COL_LABEL: KanbanCol[] = [
   },
 ];
 
+export const TABLE_MOCK_DATA: TableData[] = [
+  {
+    id: "label 1",
+    name: "label 1",
+    tags: [
+      {
+        label: "label 1",
+        color: "green",
+      },
+    ],
+    stage: {
+      label: "Cần làm",
+      color: "green",
+    },
+    startDate: "",
+    endDate: "",
+    description: "",
+  },
+  {
+    id: "label 2",
+    name: "label 1",
+    tags: [
+      {
+        label: "label 1",
+        color: "green",
+      },
+      {
+        label: "label 2",
+        color: "red",
+      },
+    ],
+    stage: {
+      label: "Cần làm",
+      color: "green",
+    },
+    startDate: "",
+    endDate: "",
+    description: "",
+  },
+  {
+    id: "label 3",
+    name: "label 1",
+    tags: [
+      {
+        label: "label 1",
+        color: "green",
+      },
+    ],
+    stage: {
+      label: "Cần làm",
+      color: "green",
+    },
+    startDate: "",
+    endDate: "",
+    description: "",
+  },
+];
+
 export const MENU_ITEMS = [];
+
+export const ImageExtension = {
+  PNG: "png",
+  GIF: "gif",
+  JPEG: "jpeg",
+  SVG: "svg",
+  TIFF: "tiff",
+  apng: "apng",
+  avif: "avif",
+  jpg: "jpg",
+  jfif: "jfif",
+  pjpeg: "pjpeg",
+  pjp: "pjp",
+  webp: "webp",
+};

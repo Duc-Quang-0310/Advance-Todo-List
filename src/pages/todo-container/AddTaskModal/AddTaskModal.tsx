@@ -17,7 +17,7 @@ import {
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 
 import {
   CreateTaskOrTypeBody,
@@ -28,6 +28,7 @@ import TextAreaForm from "../../../components/Form/TextAreaForm/TextAreaForm";
 import SelectForm from "../../../components/Form/SelectForm/SelectForm";
 import { format } from "date-fns";
 import { TAG_COLOR } from "../../../constants/color.const";
+import TagsInput from "../../../components/TagsInput/TagsInput";
 
 interface Props {
   isOpen: boolean;
@@ -36,10 +37,16 @@ interface Props {
   onSubmit: (data: CreateTaskOrTypeBody) => void;
 }
 
+const MOCKS_TAG = [
+  { color: "green", id: "1", label: "Label 1" },
+  { color: "red", id: "2", label: "Label 2" },
+  { color: "yellow", id: "3", label: "Label 3" },
+];
+
 const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
   const {
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     register,
     watch,
     reset,
@@ -56,6 +63,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
 
   const typeWatch = watch("type");
   const colorWatch = watch("colorTag");
+  const tagWatch = watch("innerTag");
 
   const handleCloseInternal = useCallback(() => {
     handleClose();
@@ -69,8 +77,6 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
     );
   }, [handleClose, reset]);
 
-  console.log("e", errors);
-
   const handleSubmitForm = useCallback(
     (form: CreateTaskOrTypeBody) => {
       onSubmit(form);
@@ -78,6 +84,23 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
     },
     [handleCloseInternal, onSubmit]
   );
+
+  const dataTags = useMemo(() => {
+    if (!tagWatch) {
+      return [];
+    }
+
+    return tagWatch
+      ?.map((tagId) => {
+        const indexFound = MOCKS_TAG.findIndex((child) => child.id === tagId);
+
+        if (indexFound) {
+          return MOCKS_TAG[indexFound];
+        }
+        return null;
+      })
+      ?.filter((i) => i !== null) as any;
+  }, [tagWatch]);
 
   useEffect(() => {
     const type = data?.type || "task";
@@ -240,14 +263,6 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
             </Collapse>
             <Collapse in={typeWatch === "task"} animateOpacity>
               <InputForm
-                errMessage={errors?.innerTag?.message}
-                register={register}
-                label="Thẻ liên quan"
-                name="innerTag"
-                displayType="inline"
-              />
-
-              <InputForm
                 errMessage={errors?.startDate?.message}
                 register={register}
                 label="Ngày bắt đầu"
@@ -266,6 +281,24 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
                 displayType="inline"
                 type="date"
               />
+              <Box display="flex" mt="3" alignItems="center">
+                <Text
+                  color="blackAlpha.600"
+                  fontSize="15px"
+                  w="130px"
+                  fontWeight="500"
+                >
+                  Thẻ liên quan
+                </Text>
+                <Box flex={1}>
+                  <TagsInput
+                    tagOption={MOCKS_TAG}
+                    name="innerTag"
+                    setValue={setValue}
+                    selectedData={dataTags}
+                  />
+                </Box>
+              </Box>
             </Collapse>
           </Stack>
         </ModalBody>
@@ -274,6 +307,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
             colorScheme="green"
             mr={3}
             onClick={handleSubmit(handleSubmitForm)}
+            disabled={!isDirty}
           >
             Tạo mới
           </Button>

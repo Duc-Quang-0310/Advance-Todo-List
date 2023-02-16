@@ -4,8 +4,10 @@ import {
   initializeAuth,
   browserSessionPersistence,
   browserPopupRedirectResolver,
+  getAuth,
 } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDhNJ3h5v-m5l-HfW_n8u3xc2-vd3lKXzM",
@@ -18,11 +20,19 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-export const firebaseApp = initializeApp(firebaseConfig);
+const firebaseApp = initializeApp(firebaseConfig);
 export const firebaseAuth = initializeAuth(firebaseApp, {
   persistence: browserSessionPersistence,
   popupRedirectResolver: browserPopupRedirectResolver,
 });
 export const firestore = getFirestore(firebaseApp);
+
+export const currentFirebaseAuth = getAuth(firebaseApp);
+
+// Image Storage
+export const storage = getStorage(
+  firebaseApp,
+  "gs://q-todo-app-101.appspot.com"
+);
 
 export default getAnalytics(firebaseApp);

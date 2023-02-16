@@ -1,4 +1,11 @@
-import { Box, FormControl, FormLabel, Select, Text } from "@chakra-ui/react";
+import {
+  Box,
+  ChakraComponent,
+  FormControl,
+  FormLabel,
+  Select,
+  Text,
+} from "@chakra-ui/react";
 import { FC, useCallback } from "react";
 import { UseFormRegister } from "react-hook-form";
 
@@ -16,6 +23,8 @@ interface Props {
   displayType?: "inline" | "block";
   options: SelectOption[];
 }
+
+type SelectFormType = ChakraComponent<"input", Props>;
 
 const SelectForm: FC<Props> = ({
   errMessage,
@@ -79,4 +88,4 @@ const SelectForm: FC<Props> = ({
   );
 };
 
-export default SelectForm;
+export default SelectForm as SelectFormType;

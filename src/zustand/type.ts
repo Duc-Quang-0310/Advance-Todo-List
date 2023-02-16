@@ -21,5 +21,5 @@ export interface LoginBody {
 }
 
 export interface ChangePasswordBody extends Omit<LoginBody, "email"> {
-  user: User;
+  oldPassword: string;
 }

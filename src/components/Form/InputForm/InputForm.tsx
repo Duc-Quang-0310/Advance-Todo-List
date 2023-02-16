@@ -1,4 +1,11 @@
-import { Box, FormControl, FormLabel, Input, Text } from "@chakra-ui/react";
+import {
+  Box,
+  FormControl,
+  FormLabel,
+  Input,
+  Text,
+  ChakraComponent,
+} from "@chakra-ui/react";
 import { FC, HTMLInputTypeAttribute, useCallback } from "react";
 import { UseFormRegister } from "react-hook-form";
 
@@ -12,6 +19,8 @@ interface Props {
   type?: HTMLInputTypeAttribute;
   disable?: boolean;
 }
+
+type InputFormType = ChakraComponent<"input", Props>;
 
 const InputForm: FC<Props> = ({
   errMessage,
@@ -62,9 +71,9 @@ const InputForm: FC<Props> = ({
           errorBorderColor="red.400"
           color="blackAlpha.700"
           type={type}
-          {...other}
           {...register(name)}
           disabled={disable}
+          {...other}
         />
       </FormControl>
       {errMessage ? (
@@ -82,4 +91,4 @@ const InputForm: FC<Props> = ({
   );
 };
 
-export default InputForm;
+export default InputForm as InputFormType;

@@ -1,6 +1,5 @@
 import create from "zustand";
 import {
-  getAuth,
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -12,14 +11,21 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   ConfirmationResult,
+  AuthErrorCodes,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updateProfile,
+  reload,
 } from "firebase/auth";
 import { devtools, persist } from "zustand/middleware";
-import { firebaseApp } from "../config/firebase";
+import { currentFirebaseAuth } from "../config/firebase";
 import { toastError, toastSuccess } from "../helper/toast";
 import { ChangePasswordBody, LoginBody, Userinfo } from "./type";
 import { ErrorData } from "@firebase/util";
 import { FirebaseErrorMessage } from "../constants/errorMessage.const";
 import { LoginByPhoneBody } from "../constants/validate.const";
+import { WEB_MESSAGE } from "../constants/message.const";
+import { PATH } from "../constants/path.const";
 
 interface AccountStore {
   firebaseToken: string;
@@ -31,7 +37,7 @@ interface AccountStore {
   logout: () => void;
   login: (body: LoginBody, onSuccess: () => void) => void;
   createAccount: (body: LoginBody) => void;
-  changePassword: (body: ChangePasswordBody) => void;
+  changePassword: (body: ChangePasswordBody, onSuccess?: () => void) => void;
   clearErrors: () => void;
   googleSignin: (onSuccess?: () => void) => void;
   requestPasswordReset: (params: Pick<LoginBody, "email">) => void;
@@ -40,32 +46,56 @@ interface AccountStore {
   ) => Promise<ConfirmationResult | null>;
   verificationLoginPhone: (userInfo: User, onSuccess?: () => void) => void;
   clearAccountStore: () => void;
+  setAccountStore: (params: Partial<AccountStore>) => void;
+  updateCurrentProfile: (params: {
+    displayName: string | null | undefined;
+    photoURL: string | null | undefined;
+    onSuccess?: () => void;
+  }) => void;
+  reUpdateUserData: (params: Partial<AccountStore>) => void;
 }
 
-export const currentFirebaseAuth = getAuth(firebaseApp);
+type ErrorLogType =
+  | "login"
+  | "sign-up"
+  | "change-password"
+  | "psw-recover"
+  | "logout"
+  | "update-profile";
+
+function onUnAuthorized(set: Function) {
+  toastError({
+    title: WEB_MESSAGE.LOGIN_EXPIRED,
+  });
+
+  window.location.pathname = PATH.SIGN_IN;
+
+  return set((state: AccountStore) => ({
+    ...state,
+    loading: false,
+  }));
+}
 
 const defaultErrorLog =
-  (
-    type: "login" | "sign-up" | "change-password" | "psw-recover" | "logout",
-    set: Function
-  ) =>
-  (e: ErrorData) => {
+  (type: ErrorLogType, set: Function) => (e: ErrorData) => {
+    console.log("String(e.message)", String(e.message));
+
     let message = "";
 
-    if (String(e.message)?.includes(FirebaseErrorMessage.MAIL_EXIST)) {
+    if (String(e.message)?.includes(AuthErrorCodes.EMAIL_EXISTS)) {
       message = "Email đã tồn tại vui lòng nhập email khác";
     }
 
-    if (String(e.message)?.includes(FirebaseErrorMessage.WRONG_PASSWORD)) {
+    if (String(e.message)?.includes(AuthErrorCodes.INVALID_PASSWORD)) {
       message = "Mật khẩu sai vui lòng nhập lại";
     }
 
-    if (String(e.message)?.includes(FirebaseErrorMessage.USER_NOT_FOUND)) {
+    if (String(e.message)?.includes(AuthErrorCodes.USER_DELETED)) {
       message = "Email không tồn tại";
     }
 
     if (!message) {
-      message = "Có lỗi xảy ra vui lòng thử lại sau";
+      message = WEB_MESSAGE.COMMON_ERROR;
     }
 
     set((state: AccountStore) => ({
@@ -81,7 +111,7 @@ const defaultErrorLog =
 
 const useAccountStore = create<AccountStore>()(
   persist(
-    devtools((set) => ({
+    devtools((set, get) => ({
       firebaseToken: "",
       userInfo: null,
       mode: "dark",
@@ -134,6 +164,7 @@ const useAccountStore = create<AccountStore>()(
                 phoneNumber: user.phoneNumber,
                 isEmailVerified: user.emailVerified,
               },
+              userObject: user,
             }));
             onSuccess?.();
           })
@@ -170,6 +201,7 @@ const useAccountStore = create<AccountStore>()(
                 phoneNumber: user.phoneNumber,
                 isEmailVerified: user.emailVerified,
               },
+              userObject: user,
             }));
           })
           .catch(defaultErrorLog("sign-up", set))
@@ -177,13 +209,45 @@ const useAccountStore = create<AccountStore>()(
             set((state) => ({ ...state, loading: false }));
           });
       },
-      changePassword: ({ password, user }) => {
-        set((state) => ({ ...state, loading: true, errors: "" }));
-        updatePassword(user, password)
+      changePassword: async ({ password, oldPassword }, onSuccess) => {
+        set((state) => ({ ...state, loading: false, errors: "" }));
+
+        const userInfo = get().userInfo;
+        const userObject = get().userObject;
+
+        if (!userInfo || userInfo === null || !userObject) {
+          return onUnAuthorized(set);
+        }
+
+        const credential = EmailAuthProvider.credential(
+          userInfo?.email as string,
+          oldPassword
+        );
+
+        try {
+          await reauthenticateWithCredential(userObject, credential);
+        } catch (error: any) {
+          if (
+            String(error.message)?.includes(AuthErrorCodes.INVALID_PASSWORD)
+          ) {
+            return set((state: AccountStore) => ({
+              ...state,
+              loading: false,
+              errors: "Mật khẩu sai vui lòng nhập lại",
+            }));
+          }
+
+          return toastError({
+            title: WEB_MESSAGE.COMMON_ERROR,
+          });
+        }
+
+        updatePassword(currentFirebaseAuth.currentUser as User, password)
           .then((_response) => {
             toastSuccess({
               title: `Đổi mật khẩu thành công`,
             });
+            onSuccess?.();
           })
           .catch(defaultErrorLog("change-password", set))
           .finally(() => {
@@ -301,7 +365,6 @@ const useAccountStore = create<AccountStore>()(
             isEmailVerified: user.emailVerified,
           },
         }));
-
         onSuccess?.();
       },
       clearAccountStore: () => {
@@ -310,9 +373,46 @@ const useAccountStore = create<AccountStore>()(
           userInfo: null,
           mode: "dark",
           loading: false,
-          userObject: null,
           errors: "",
         });
+      },
+      setAccountStore: (params: Partial<AccountStore>) =>
+        set((state) => ({ ...state, ...params })),
+      updateCurrentProfile: ({ displayName, photoURL, onSuccess }) => {
+        const user = get().userObject;
+
+        if (!user || user === null) {
+          return onUnAuthorized(set);
+        }
+
+        updateProfile(user, {
+          displayName,
+          photoURL,
+        })
+          .then((_res) => {
+            onSuccess?.();
+            toastSuccess({
+              title: "Cập nhật thông tin thành công",
+            });
+          })
+          .catch(defaultErrorLog("update-profile", set));
+      },
+      reUpdateUserData: async (params: Partial<AccountStore>) => {
+        set((state) => ({ ...state, loading: true, errors: "" }));
+        const user = get().userObject;
+
+        if (!user || user === null) {
+          return onUnAuthorized(set);
+        }
+
+        try {
+          await reload(user);
+          set((state) => ({ ...state, loading: false, ...params }));
+        } catch (error) {
+          toastError({
+            title: "Cập nhật thông tin người dùng thất bại, vui lòng thử lại",
+          });
+        }
       },
     })),
     {
