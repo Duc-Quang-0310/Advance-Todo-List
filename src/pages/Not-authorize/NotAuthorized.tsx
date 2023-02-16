@@ -1,8 +1,10 @@
 import { Box, Button, Kbd, Text } from "@chakra-ui/react";
 import { useBrowser } from "../../hooks/useBrowser";
+import useAccountStore from "../../zustand/useAccountStore";
 
 const NotAuthorized = () => {
-  const { pushHome } = useBrowser();
+  const { pushHome, pushSignIn } = useBrowser();
+  const user = useAccountStore((state) => state.userInfo);
   return (
     <Box
       className="basicWrapper"
@@ -18,7 +20,12 @@ const NotAuthorized = () => {
         Bạn không có thẩm quyền để xem trang web này
       </Text>
 
-      <Button mt="4" background="green.500" color="white" onClick={pushHome}>
+      <Button
+        mt="4"
+        background="green.500"
+        color="white"
+        onClick={user ? pushHome : pushSignIn}
+      >
         Quay về Trang chính
       </Button>
     </Box>

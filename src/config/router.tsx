@@ -26,11 +26,11 @@ const NotAuthorizedPage = lazy(
 const ToDoDetailPage = lazy(() => import("../pages/todo-detail/TodoDetail"));
 
 export const Routers = (): Router[] => {
-  const token = useAccountStore((state) => state.firebaseToken);
+  const user = useAccountStore((state) => state.userInfo);
 
   const isAuthorized = useCallback(
-    (children: ReactNode) => (token ? children : <NotAuthorizedPage />),
-    [token]
+    (children: ReactNode) => (user ? children : <NotAuthorizedPage />),
+    [user]
   );
 
   return [
@@ -62,15 +62,15 @@ export const Routers = (): Router[] => {
       component: isAuthorized(<TodoPage />),
       path: PATH.TODO,
     },
-    !token && {
+    !user && {
       component: <SignInPage />,
       path: PATH.SIGN_IN,
     },
-    !token && {
+    !user && {
       component: <SignUpPage />,
       path: PATH.SIGN_UP,
     },
-    !token && {
+    !user && {
       component: <PSWRecoverPage />,
       path: PATH.PSW_RECOVER,
     },

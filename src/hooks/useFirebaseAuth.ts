@@ -27,12 +27,18 @@ const useFirebaseAuth = () => {
           },
         });
       } else {
-        firebaseAuth.signOut();
         setAccountStore({
           userObject: null,
           userInfo: null,
+          firebaseToken: "",
+          mode: "system",
+          loading: false,
+          errors: "",
         });
-        window.location.pathname = PATH.SIGN_IN;
+
+        if (window.location.pathname !== PATH.SIGN_IN) {
+          window.location.pathname = PATH.SIGN_IN;
+        }
       }
     });
 
