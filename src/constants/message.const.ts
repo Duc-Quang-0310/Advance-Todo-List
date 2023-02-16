@@ -1,5 +1,6 @@
 export const WEB_MESSAGE = {
   COMMON_ERROR: "Có lỗi xảy ra vui lòng thử lại sau",
+  LOGIN_EXPIRED: "Hết phiên đăng nhập vui lòng đăng nhập lại",
 };
 
 export const queryKey = {
