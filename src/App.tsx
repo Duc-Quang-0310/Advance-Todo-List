@@ -25,6 +25,7 @@ import { HIDDEN_MENU_PATH, PATH } from "./constants/path.const";
 import NavigationMenu from "./components/Navigation/NavigationMenu";
 import LoadingFallBack from "./components/LoadingFallBack/LoadingFallBack";
 import useAccountStore from "./zustand/useAccountStore";
+import useFirebaseAuth from "./hooks/useFirebaseAuth";
 
 ChartJS.register(
   CategoryScale,
@@ -40,6 +41,7 @@ ChartJS.register(
 function App() {
   const { hasAdblock } = useAdsblock();
   const userInfo = useAccountStore((state) => state.userInfo);
+  useFirebaseAuth();
 
   if (hasAdblock) {
     return (

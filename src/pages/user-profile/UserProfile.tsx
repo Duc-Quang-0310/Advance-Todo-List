@@ -14,7 +14,7 @@ const PasswordTab = lazy(
   () => import("./components/ChangePassword/ChangePass")
 );
 
-enum TabIdentify {
+export enum TabIdentify {
   Profile = "Profile",
   Stage = "Stage",
   Password = "Password",
@@ -49,7 +49,7 @@ const UserProfile: FC = () => {
       case TabIdentify.Profile:
         return <InfoTab />;
       case TabIdentify.Password:
-        return <PasswordTab />;
+        return <PasswordTab setTab={setTab} />;
       case TabIdentify.Stage:
         return <StageTab />;
       default:

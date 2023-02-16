@@ -71,9 +71,9 @@ const InputForm: FC<Props> = ({
           errorBorderColor="red.400"
           color="blackAlpha.700"
           type={type}
-          {...other}
           {...register(name)}
           disabled={disable}
+          {...other}
         />
       </FormControl>
       {errMessage ? (

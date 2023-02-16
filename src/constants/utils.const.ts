@@ -190,3 +190,18 @@ export const TABLE_MOCK_DATA: TableData[] = [
 ];
 
 export const MENU_ITEMS = [];
+
+export const ImageExtension = {
+  PNG: "png",
+  GIF: "gif",
+  JPEG: "jpeg",
+  SVG: "svg",
+  TIFF: "tiff",
+  apng: "apng",
+  avif: "avif",
+  jpg: "jpg",
+  jfif: "jfif",
+  pjpeg: "pjpeg",
+  pjp: "pjp",
+  webp: "webp",
+};

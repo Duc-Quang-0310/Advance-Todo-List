@@ -6,6 +6,8 @@ import {
   useCallback,
   KeyboardEvent,
   useEffect,
+  Dispatch,
+  SetStateAction,
 } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,17 +20,19 @@ import {
   ChangePasswordForm,
 } from "../../../../constants/validate.const";
 import InputForm from "../../../../components/Form/InputForm/InputForm";
-import { toastError } from "../../../../helper/toast";
-import { WEB_MESSAGE } from "../../../../constants/message.const";
+import { TabIdentify } from "../../UserProfile";
+
+interface Props {
+  setTab: Dispatch<SetStateAction<TabIdentify>>;
+}
 
 const highLightText: CSSProperties = {
   fontWeight: 700,
   color: "#276749",
 };
 
-const ChangePass: FC = () => {
+const ChangePass: FC<Props> = ({ setTab }) => {
   const userInfo = useAccountStore((state) => state.userInfo);
-  const userObject = useAccountStore((state) => state.userObject);
   const loading = useAccountStore((state) => state.loading);
   const storeErr = useAccountStore((state) => state.errors);
   const clearErrors = useAccountStore((state) => state.clearErrors);
@@ -49,6 +53,7 @@ const ChangePass: FC = () => {
     register,
     watch,
     setError,
+    reset,
   } = useForm<ChangePasswordForm>({
     mode: "all",
     resolver: zodResolver(ChangePasswordSchema),
@@ -71,15 +76,18 @@ const ChangePass: FC = () => {
         });
       }
 
-      if (!userObject || userObject === null) {
-        return toastError({
-          title: WEB_MESSAGE.COMMON_ERROR,
-        });
-      }
-
-      changePassword({ password, user: userObject, oldPassword });
+      changePassword({ password, oldPassword }, () => {
+        setTab(TabIdentify.Profile);
+        reset(
+          {},
+          {
+            keepValues: false,
+            keepErrors: false,
+          }
+        );
+      });
     },
-    [changePassword, setError, userObject]
+    [changePassword, setError, setTab, reset]
   );
 
   const handleKeyDown = useCallback(
@@ -151,7 +159,15 @@ const ChangePass: FC = () => {
           </Text>
           <PasswordVerification password={passwordWatch} defaultShow />
         </Box>
-        <Box flex={1} display="flex" flexDirection="column">
+        <Box
+          flex={1}
+          display="flex"
+          flexDirection="column"
+          bg="white"
+          boxShadow="md"
+          p="7"
+          borderRadius="md"
+        >
           <InputForm
             errMessage={errors?.oldPassword?.message}
             register={register}
