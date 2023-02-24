@@ -94,6 +94,7 @@ const AppHeader: FC = () => {
           alt="App Logo"
           loading="eager"
           rounded="full"
+          objectFit="cover"
           boxSize="26px"
         />
         <Box className={s.hoverItem} rounded="full">

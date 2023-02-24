@@ -18,6 +18,7 @@ const LoadingFallBack = ({ ...other }) => (
       color="green.500"
       size="xl"
     />
+    {other?.children}
   </Box>
 );
 

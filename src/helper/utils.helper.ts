@@ -1,5 +1,8 @@
+import { Timestamp } from "firebase/firestore";
 import { DraggableLocation } from "react-beautiful-dnd";
+import { TagColor } from "../constants/color.const";
 import { KanbanCol, RowData } from "../constants/utils.const";
+import { Stage } from "../zustand/type";
 
 export type KanbanDataType = {
   colData: {
@@ -115,3 +118,36 @@ export function getKanBanDragResult(
 
   return newKanban;
 }
+
+export const getDefaultStageData = (usrId: string): Stage[] => [
+  {
+    colorChema: TagColor.blue,
+    description: "Mặc định",
+    label: "Cần làm",
+    order: 0,
+    refID: crypto.randomUUID(),
+    createdAt: Timestamp.now(),
+    userId: usrId,
+    isDefault: true,
+  },
+  {
+    colorChema: TagColor.purple,
+    description: "Mặc định",
+    label: "Đang tiến hành",
+    order: 1,
+    refID: crypto.randomUUID(),
+    createdAt: Timestamp.now(),
+    userId: usrId,
+    isDefault: true,
+  },
+  {
+    colorChema: TagColor.green,
+    description: "Mặc định",
+    label: "Hoàn thành",
+    order: 2,
+    refID: crypto.randomUUID(),
+    createdAt: Timestamp.now(),
+    userId: usrId,
+    isDefault: true,
+  },
+];

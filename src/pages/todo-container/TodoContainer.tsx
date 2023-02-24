@@ -6,13 +6,15 @@ import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import {
   FilteredFields,
   filterFields,
-  MOCK_COL_LABEL,
   WatchMode,
 } from "../../constants/utils.const";
 import AddTaskModal from "./AddTaskModal/AddTaskModal";
 import { CreateTaskOrTypeBody } from "../../constants/validate.const";
 import TodoFilter from "./TodoFilter/TodoFilter";
 import LoadingFallBack from "../../components/LoadingFallBack/LoadingFallBack";
+import useKanbanData from "../../hooks/useKanbanData";
+import useStageStore from "../../zustand/useStageStore";
+import useAccountStore from "../../zustand/useAccountStore";
 
 const KanbanMode = lazy(() => import("./KanbanMode/KanbanMode"));
 const TableMode = lazy(() => import("./TableMode/TableMode"));
@@ -31,10 +33,14 @@ const ButtonMode = [
 ];
 
 const TodoContainer = () => {
+  const createNewStage = useStageStore((state) => state.createNewStage);
+  const allStage = useStageStore((state) => state.allStage);
+  const userInfo = useAccountStore((state) => state.userInfo);
+
   const [viewMode, setViewMode] = useState(WatchMode.KANBAN);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState<Partial<CreateTaskOrTypeBody>>();
-  const [kanban, setKanban] = useState(MOCK_COL_LABEL);
+  const { kanban, setKanban } = useKanbanData();
   const [filter, setFilter] = useState(filterFields);
 
   const handleClickAdd = useCallback(() => {
@@ -81,26 +87,28 @@ const TodoContainer = () => {
       default:
         return null;
     }
-  }, [handleClickAdd, filteredKanban, viewMode]);
+  }, [viewMode, handleClickAdd, filteredKanban, setKanban]);
 
   const handleChangeMode = useCallback((mode: WatchMode) => {
     setViewMode(mode);
   }, []);
 
-  const handleSubmitCreation = useCallback((form: CreateTaskOrTypeBody) => {
-    setKanban((prev) => [
-      ...prev,
-      {
-        id: form?.id || crypto.randomUUID(),
-        colData: {
-          id: crypto.randomUUID(),
-          row: [],
-        },
-        label: form.name || "New Column",
-        labelColor: form?.colorTag || "pink",
-      },
-    ]);
-  }, []);
+  const handleSubmitCreation = useCallback(
+    (form: CreateTaskOrTypeBody) => {
+      const { type, ...other } = form;
+      if (type === "tag") {
+        return createNewStage({
+          colorChema: other.colorTag || "",
+          description: other.description || "",
+          label: other.name,
+          userId: userInfo?.userID as string,
+          order: allStage?.length,
+          refID: crypto.randomUUID(),
+        });
+      }
+    },
+    [allStage?.length, createNewStage, userInfo?.userID]
+  );
 
   const handleUpdateFilter = useCallback((filter: FilteredFields) => {
     setFilter(filter);

@@ -12,6 +12,7 @@ import { UseFormRegister } from "react-hook-form";
 interface SelectOption {
   label: string;
   value: string;
+  disabled?: boolean;
 }
 
 interface Props {
@@ -73,7 +74,11 @@ const SelectForm: FC<Props> = ({
         >
           {options.length > 0 &&
             options.map((option) => (
-              <option value={option.value} key={option.value}>
+              <option
+                value={option.value}
+                key={option.value}
+                disabled={option.disabled || false}
+              >
                 {option.label}
               </option>
             ))}
