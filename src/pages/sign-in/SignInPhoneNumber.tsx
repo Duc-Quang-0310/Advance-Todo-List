@@ -203,6 +203,7 @@ const modalRef = createRef<ModalRef>();
 export const SignInMobileModal = () => (
   <SignInPhoneNumberComponent ref={modalRef} />
 );
+
 export const showSignInMobileModal = () => {
   modalRef?.current?.showMobileSignInModal();
 };

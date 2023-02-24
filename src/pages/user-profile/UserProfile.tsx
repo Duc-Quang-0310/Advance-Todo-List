@@ -1,5 +1,5 @@
 import { Box, Icon } from "@chakra-ui/react";
-import { FC, lazy, useState, Suspense, useCallback } from "react";
+import { FC, lazy, useState, Suspense, useCallback, useEffect } from "react";
 import { CgProfile } from "react-icons/cg";
 import { RiTimeLine } from "react-icons/ri";
 import { MdTrackChanges } from "react-icons/md";
@@ -7,6 +7,7 @@ import { MdTrackChanges } from "react-icons/md";
 import UserTab, { ColorSchema } from "./components/UserTab/UserTab";
 import LoadingFallBack from "../../components/LoadingFallBack/LoadingFallBack";
 import s from "./UserProfile.module.css";
+import { useBrowser } from "../../hooks/useBrowser";
 
 const InfoTab = lazy(() => import("./components/ChangeInfo/ChangeInfo"));
 const StageTab = lazy(() => import("./components/ChangeStage/ChangeStage"));
@@ -43,6 +44,7 @@ const ALL_TABS = [
 
 const UserProfile: FC = () => {
   const [tab, setTab] = useState<TabIdentify>(TabIdentify.Profile);
+  const { routeState } = useBrowser();
 
   const handleChangeTab = useCallback((tab: TabIdentify) => {
     switch (tab) {
@@ -58,6 +60,12 @@ const UserProfile: FC = () => {
   }, []);
 
   const handleClickOnTab = (tab: TabIdentify) => setTab(tab);
+
+  useEffect(() => {
+    if (routeState && routeState?.tab) {
+      setTab(routeState?.tab);
+    }
+  }, [routeState]);
 
   return (
     <Box

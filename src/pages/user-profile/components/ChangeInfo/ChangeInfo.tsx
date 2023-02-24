@@ -48,7 +48,9 @@ const ChangeInfo: FC = () => {
               avatar: firebaseImg,
             } as any,
           });
-          setFirebaseImg("");
+          setTimeout(() => {
+            setFirebaseImg("");
+          }, 300);
         },
       });
     },
@@ -85,7 +87,7 @@ const ChangeInfo: FC = () => {
         </Avatar>
         <Button
           colorScheme="teal"
-          onClick={(e) => handleUpdateProfile(e)}
+          onClick={handleUpdateProfile}
           disabled={firebaseImg.length === 0}
         >
           Cập nhật

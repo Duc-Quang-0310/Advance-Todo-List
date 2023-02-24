@@ -17,17 +17,31 @@ import {
   updateProfile,
   reload,
 } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import { devtools, persist } from "zustand/middleware";
-import { currentFirebaseAuth } from "../config/firebase";
+import {
+  currentFirebaseAuth,
+  firebaseAuth,
+  firestore,
+} from "../config/firebase";
 import { toastError, toastSuccess } from "../helper/toast";
-import { ChangePasswordBody, LoginBody, Userinfo } from "./type";
-import { ErrorData } from "@firebase/util";
+import {
+  ChangePasswordBody,
+  FirestoreSchema,
+  LoginBody,
+  Userinfo,
+} from "./type";
 import { FirebaseErrorMessage } from "../constants/errorMessage.const";
 import { LoginByPhoneBody } from "../constants/validate.const";
 import { WEB_MESSAGE } from "../constants/message.const";
-import { PATH } from "../constants/path.const";
+import { getDefaultStageData } from "../helper/utils.helper";
+import {
+  defaultErrorLog,
+  generateDefaultData,
+  onUnAuthorized,
+} from "../helper/zustand.helper";
 
-interface AccountStore {
+export interface AccountStore {
   firebaseToken: string;
   userInfo: Userinfo | null;
   mode: "dark" | "light" | "system";
@@ -54,60 +68,6 @@ interface AccountStore {
   }) => void;
   reUpdateUserData: (params: Partial<AccountStore>) => void;
 }
-
-type ErrorLogType =
-  | "login"
-  | "sign-up"
-  | "change-password"
-  | "psw-recover"
-  | "logout"
-  | "update-profile";
-
-function onUnAuthorized(set: Function) {
-  toastError({
-    title: WEB_MESSAGE.LOGIN_EXPIRED,
-  });
-
-  window.location.pathname = PATH.SIGN_IN;
-
-  return set((state: AccountStore) => ({
-    ...state,
-    loading: false,
-  }));
-}
-
-const defaultErrorLog =
-  (type: ErrorLogType, set: Function) => (e: ErrorData) => {
-    console.log("String(e.message)", String(e.message));
-
-    let message = "";
-
-    if (String(e.message)?.includes(AuthErrorCodes.EMAIL_EXISTS)) {
-      message = "Email đã tồn tại vui lòng nhập email khác";
-    }
-
-    if (String(e.message)?.includes(AuthErrorCodes.INVALID_PASSWORD)) {
-      message = "Mật khẩu sai vui lòng nhập lại";
-    }
-
-    if (String(e.message)?.includes(AuthErrorCodes.USER_DELETED)) {
-      message = "Email không tồn tại";
-    }
-
-    if (!message) {
-      message = WEB_MESSAGE.COMMON_ERROR;
-    }
-
-    set((state: AccountStore) => ({
-      ...state,
-      loading: false,
-      errors: message,
-    }));
-
-    toastError({
-      title: message,
-    });
-  };
 
 const useAccountStore = create<AccountStore>()(
   persist(
@@ -152,7 +112,7 @@ const useAccountStore = create<AccountStore>()(
               firebaseToken: currentToken,
               userInfo: {
                 email: user.email,
-                userID: user.providerId || user.uid,
+                userID: user.uid,
                 displayName: user.displayName,
                 avatar: user.photoURL,
                 provider: {
@@ -189,7 +149,7 @@ const useAccountStore = create<AccountStore>()(
               firebaseToken: currentToken,
               userInfo: {
                 email: user.email,
-                userID: user.providerId || user.uid,
+                userID: user.uid,
                 displayName: user.displayName,
                 avatar: user.photoURL,
                 provider: {
@@ -203,6 +163,13 @@ const useAccountStore = create<AccountStore>()(
               },
               userObject: user,
             }));
+            const defaultData = getDefaultStageData(user.uid);
+
+            await Promise.allSettled([
+              setDoc(doc(firestore, FirestoreSchema.STAGE), defaultData[0]),
+              setDoc(doc(firestore, FirestoreSchema.STAGE), defaultData[1]),
+              setDoc(doc(firestore, FirestoreSchema.STAGE), defaultData[2]),
+            ]);
           })
           .catch(defaultErrorLog("sign-up", set))
           .finally(() => {
@@ -272,7 +239,7 @@ const useAccountStore = create<AccountStore>()(
               firebaseToken: currentToken,
               userInfo: {
                 email: user.email,
-                userID: user.providerId || user.uid,
+                userID: user.uid,
                 displayName: user.displayName,
                 avatar: user.photoURL,
                 provider: {
@@ -285,6 +252,7 @@ const useAccountStore = create<AccountStore>()(
                 isEmailVerified: user.emailVerified,
               },
             }));
+            await generateDefaultData(user.uid);
             onSuccess?.();
           })
           .catch(defaultErrorLog("login", set))
@@ -352,7 +320,7 @@ const useAccountStore = create<AccountStore>()(
           firebaseToken: currentToken,
           userInfo: {
             email: user.email,
-            userID: user.providerId || user.uid,
+            userID: user.uid,
             displayName: user.displayName,
             avatar: user.photoURL,
             provider: {
@@ -365,15 +333,18 @@ const useAccountStore = create<AccountStore>()(
             isEmailVerified: user.emailVerified,
           },
         }));
+        await generateDefaultData(user.uid);
         onSuccess?.();
       },
       clearAccountStore: () => {
+        firebaseAuth.signOut();
         set({
           firebaseToken: "",
           userInfo: null,
           mode: "dark",
           loading: false,
           errors: "",
+          userObject: null,
         });
       },
       setAccountStore: (params: Partial<AccountStore>) =>

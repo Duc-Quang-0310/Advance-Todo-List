@@ -1,18 +1,12 @@
 import { Box, Button, SlideFade } from "@chakra-ui/react";
-import {
-  useCallback,
-  FC,
-  useState,
-  useEffect,
-  Dispatch,
-  SetStateAction,
-} from "react";
+import { useCallback, FC, Dispatch, SetStateAction } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { AiOutlinePlus } from "react-icons/ai";
 
 import { StrictModeDroppable } from "../../../components/Droppable/StrictModeDroppable";
 import { DropableType, KanbanCol } from "../../../constants/utils.const";
-import { getKanBanDragResult, swap } from "../../../helper/utils.helper";
+import { getKanBanDragResult } from "../../../helper/utils.helper";
+import useStageStore from "../../../zustand/useStageStore";
 import Column from "./components/Column";
 
 interface KanbanModeProps {
@@ -26,7 +20,8 @@ const KanbanMode: FC<KanbanModeProps> = ({
   kanban,
   setKanban,
 }) => {
-  const [isChangingKanban, setIsChangingKanban] = useState(false);
+  const allStage = useStageStore((state) => state.allStage);
+  const updateStage = useStageStore((state) => state.updateStage);
 
   const onDragEnd = useCallback(
     (dragResult: DropResult) => {
@@ -35,47 +30,57 @@ const KanbanMode: FC<KanbanModeProps> = ({
         return null;
       }
 
-      if (type === DropableType.BOARD) {
-        let oldKanban: KanbanCol[] = [];
+      if (destination.index === source.index) {
+        return;
+      }
 
-        if (source.index === 0 && destination.index === kanban?.length - 1) {
-          const defaultKanban = [...kanban];
-          defaultKanban.shift();
-          oldKanban = [...defaultKanban, kanban[0]];
-        } else if (
-          source.index === kanban?.length - 1 &&
-          destination.index === 0
-        ) {
-          const defaultKanban = [...kanban];
-          defaultKanban.pop();
-          oldKanban = [kanban[kanban?.length - 1], ...defaultKanban];
-        } else {
-          oldKanban = swap([...kanban], source.index, destination.index);
+      if (type === DropableType.BOARD) {
+        const updatedKanban: KanbanCol[] = Array.from(kanban);
+        const [removedEl] = updatedKanban.splice(source.index, 1);
+        updatedKanban.splice(destination.index, 0, removedEl);
+
+        const changedCols = allStage
+          ?.map((stage, index) => {
+            if (stage.id !== updatedKanban?.[index]?.id) {
+              const newIndexOrder = updatedKanban?.findIndex(
+                (kb) => kb.id === stage.id
+              );
+
+              if (newIndexOrder !== -1) {
+                return { ...stage, order: newIndexOrder };
+              }
+
+              return null;
+            }
+            return null;
+          })
+          ?.filter((i) => i !== null);
+
+        if (changedCols.length) {
+          Promise.allSettled(
+            changedCols.map((col) =>
+              updateStage(
+                {
+                  id: col?.id,
+                  order: col?.order,
+                },
+                () => {},
+                true
+              )
+            )
+          );
         }
 
-        return setKanban(oldKanban);
+        return setKanban(updatedKanban);
       }
       const newKanban = getKanBanDragResult(kanban, source, destination);
 
       if (!newKanban?.length) {
         return null;
       }
-      setIsChangingKanban(true);
       setKanban(newKanban);
     },
-    [kanban, setKanban]
-  );
-
-  useEffect(
-    () => () => {
-      if (isChangingKanban) {
-        // <-- Update Kanban only an only if user leave Kanban View Mode -->
-        console.log("Kanban has changed");
-        // <-- TODO: Compare old Kanban data and new Kanban data if they are the same not update -->
-        setIsChangingKanban(false);
-      }
-    },
-    [isChangingKanban]
+    [allStage, kanban, setKanban, updateStage]
   );
 
   return (

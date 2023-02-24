@@ -1,4 +1,9 @@
-import { useLocation, useNavigate, useParams } from "react-router";
+import {
+  NavigateOptions,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router";
 import { PATH } from "../constants/path.const";
 
 export const useBrowser = () => {
@@ -38,8 +43,8 @@ export const useBrowser = () => {
     navigate(PATH.PSW_RECOVER);
   };
 
-  const pushProfile = () => {
-    navigate(PATH.USER_PROFILE);
+  const pushProfile = (options?: NavigateOptions) => {
+    navigate(PATH.USER_PROFILE, options);
   };
 
   return {
