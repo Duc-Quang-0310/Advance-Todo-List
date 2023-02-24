@@ -28,13 +28,16 @@ import TextAreaForm from "../../../components/Form/TextAreaForm/TextAreaForm";
 import SelectForm from "../../../components/Form/SelectForm/SelectForm";
 import { format } from "date-fns";
 import { TAG_COLOR } from "../../../constants/color.const";
-import TagsInput from "../../../components/TagsInput/TagsInput";
+import TagsInput, { TagOption } from "../../../components/TagsInput/TagsInput";
+import useStageStore from "../../../zustand/useStageStore";
 
 interface Props {
   isOpen: boolean;
   handleClose: () => void;
   data?: Partial<CreateTaskOrTypeBody>;
   onSubmit: (data: CreateTaskOrTypeBody) => void;
+  disableField?: Array<"task" | "tag">;
+  onViewMode?: boolean;
 }
 
 const MOCKS_TAG = [
@@ -43,7 +46,26 @@ const MOCKS_TAG = [
   { color: "yellow", id: "3", label: "Label 3" },
 ];
 
-const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
+const AddTaskModal: FC<Props> = ({
+  handleClose,
+  isOpen,
+  data,
+  onSubmit,
+  disableField,
+  onViewMode = false,
+}) => {
+  const allStage = useStageStore((state) => state.allStage);
+
+  const stageOptions = useMemo<TagOption[]>(
+    () =>
+      allStage?.map((stage) => ({
+        color: stage.colorChema || "",
+        id: stage.id || crypto.randomUUID(),
+        label: stage.label,
+      })) || [],
+    [allStage]
+  );
+
   const {
     handleSubmit,
     formState: { errors, isDirty },
@@ -64,6 +86,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
   const typeWatch = watch("type");
   const colorWatch = watch("colorTag");
   const tagWatch = watch("innerTag");
+  const nameWatch = watch("name");
 
   const handleCloseInternal = useCallback(() => {
     handleClose();
@@ -104,7 +127,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
 
   useEffect(() => {
     const type = data?.type || "task";
-    const id = data?.id || crypto.randomUUID();
+    const id = data?.id;
     const name = data?.name || "";
     const description = data?.description || "";
     const colorTag = data?.colorTag || TAG_COLOR[1];
@@ -120,17 +143,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
     setValue("startDate", startDate);
     setValue("endDate", endDate);
     setValue("innerTag", innerTag);
-  }, [
-    data?.colorTag,
-    data?.description,
-    data?.endDate,
-    data?.id,
-    data?.innerTag,
-    data?.name,
-    data?.startDate,
-    data?.type,
-    setValue,
-  ]);
+  }, [data, setValue]);
 
   return (
     <Modal
@@ -167,12 +180,15 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
                 {
                   label: "Việc cần làm",
                   value: "task",
+                  disabled: disableField && disableField.includes("task"),
                 },
                 {
                   label: "Giai Đoạn",
                   value: "tag",
+                  disabled: disableField && disableField.includes("tag"),
                 },
               ]}
+              disabled={onViewMode}
             />
 
             <InputForm
@@ -182,6 +198,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
               name="name"
               isRequired
               displayType="inline"
+              disabled={onViewMode}
             />
 
             <TextAreaForm
@@ -190,6 +207,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
               label="Chú thích"
               name="description"
               displayType="inline"
+              disabled={onViewMode}
             />
 
             <Collapse in={typeWatch === "tag"} animateOpacity>
@@ -228,8 +246,15 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
                         borderRadius="5px"
                         marginRight="2"
                         position="relative"
-                        cursor="pointer"
-                        onClick={() => setValue("colorTag", color)}
+                        cursor={!onViewMode ? "pointer" : "not-allowed"}
+                        pointerEvents={onViewMode ? "none" : "auto"}
+                        onClick={() =>
+                          setValue("colorTag", color, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: false,
+                          })
+                        }
                       >
                         {colorWatch === color ? (
                           <Box
@@ -257,7 +282,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
                 <AlertIcon />
                 Giai đoạn của bạn sẽ trông như thế này:
                 <Badge colorScheme={colorWatch} ml="auto" fontSize="15px">
-                  Yeah
+                  {nameWatch ?? "Sample"}
                 </Badge>
               </Alert>
             </Collapse>
@@ -280,6 +305,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
                 isRequired
                 displayType="inline"
                 type="date"
+                disable={onViewMode}
               />
               <Box display="flex" mt="3" alignItems="center">
                 <Text
@@ -292,7 +318,7 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
                 </Text>
                 <Box flex={1}>
                   <TagsInput
-                    tagOption={MOCKS_TAG}
+                    tagOption={stageOptions}
                     name="innerTag"
                     setValue={setValue}
                     selectedData={dataTags}
@@ -303,14 +329,16 @@ const AddTaskModal: FC<Props> = ({ handleClose, isOpen, data, onSubmit }) => {
           </Stack>
         </ModalBody>
         <ModalFooter>
-          <Button
-            colorScheme="green"
-            mr={3}
-            onClick={handleSubmit(handleSubmitForm)}
-            disabled={!isDirty}
-          >
-            Tạo mới
-          </Button>
+          {!onViewMode ? (
+            <Button
+              colorScheme="green"
+              mr={3}
+              onClick={handleSubmit(handleSubmitForm)}
+              disabled={!isDirty}
+            >
+              {data ? "Cập nhật" : "Tạo mới"}
+            </Button>
+          ) : null}
           <Button
             onClick={handleCloseInternal}
             variant="ghost"

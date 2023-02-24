@@ -136,6 +136,7 @@ const NavigationMenu: FC = () => {
         background="blackAlpha.100"
         display="flex"
         flexDirection="column"
+        tabIndex={0}
       >
         <Box
           data-display="Logo-block"
@@ -173,6 +174,7 @@ const NavigationMenu: FC = () => {
                 position="relative"
                 className={isActive ? s.activeNavBlock : undefined}
                 transition="all 0.1s ease-in"
+                tabIndex={0}
               >
                 <Box boxSize="24px" mx="2" display="flex" alignItems="center">
                   {icon}

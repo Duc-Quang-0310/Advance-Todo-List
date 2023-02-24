@@ -13,7 +13,7 @@ const useFirebaseAuth = () => {
           userObject: user,
           userInfo: {
             email: user.email,
-            userID: user.providerId || user.uid,
+            userID: user.uid,
             displayName: user.displayName,
             avatar: user.photoURL,
             provider: {
