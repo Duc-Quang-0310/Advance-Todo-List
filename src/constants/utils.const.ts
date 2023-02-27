@@ -61,7 +61,7 @@ export interface TableData {
 export interface FilteredFields {
   name: string;
   tag: string[];
-  stage: string;
+  stage: string[];
   startDate: string;
   endDate: string;
 }
@@ -69,7 +69,7 @@ export interface FilteredFields {
 export const filterFields: FilteredFields = {
   name: "",
   tag: [],
-  stage: "",
+  stage: [],
   startDate: "",
   endDate: "",
 };
