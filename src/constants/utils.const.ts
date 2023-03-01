@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Stage } from "../zustand/type";
 
 export const initPlace = {
   transform: "translateY(-600px)",
@@ -22,6 +23,7 @@ export enum DropableType {
 }
 
 export interface RowData {
+  id: string;
   label: string;
   key: string;
 }
@@ -51,17 +53,17 @@ export interface Tag {
 export interface TableData {
   id: string;
   name: string;
-  stage: Tag;
+  stage: Stage;
   tags: Tag[];
-  startDate: string;
-  endDate: string;
+  startDate: Date;
+  endDate: Date;
   description: string;
 }
 
 export interface FilteredFields {
   name: string;
   tag: string[];
-  stage: string;
+  stage: string[];
   startDate: string;
   endDate: string;
 }
@@ -69,7 +71,7 @@ export interface FilteredFields {
 export const filterFields: FilteredFields = {
   name: "",
   tag: [],
-  stage: "",
+  stage: [],
   startDate: "",
   endDate: "",
 };
@@ -83,10 +85,12 @@ export const MOCK_COL_LABEL: KanbanCol[] = [
         {
           label: "label 1",
           key: crypto.randomUUID(),
+          id: "1",
         },
         {
           label: "label 2",
           key: crypto.randomUUID(),
+          id: "1",
         },
       ],
       id: crypto.randomUUID(),
@@ -101,10 +105,12 @@ export const MOCK_COL_LABEL: KanbanCol[] = [
         {
           label: "label 3",
           key: crypto.randomUUID(),
+          id: "1",
         },
         {
           label: "label 4",
           key: crypto.randomUUID(),
+          id: "1",
         },
       ],
       id: crypto.randomUUID(),
@@ -119,73 +125,17 @@ export const MOCK_COL_LABEL: KanbanCol[] = [
         {
           label: "label 5",
           key: crypto.randomUUID(),
+          id: "1",
         },
         {
           label: "label 6",
           key: crypto.randomUUID(),
+          id: "1",
         },
       ],
       id: crypto.randomUUID(),
     },
     labelColor: "red",
-  },
-];
-
-export const TABLE_MOCK_DATA: TableData[] = [
-  {
-    id: "label 1",
-    name: "label 1",
-    tags: [
-      {
-        label: "label 1",
-        color: "green",
-      },
-    ],
-    stage: {
-      label: "Cần làm",
-      color: "green",
-    },
-    startDate: "",
-    endDate: "",
-    description: "",
-  },
-  {
-    id: "label 2",
-    name: "label 1",
-    tags: [
-      {
-        label: "label 1",
-        color: "green",
-      },
-      {
-        label: "label 2",
-        color: "red",
-      },
-    ],
-    stage: {
-      label: "Cần làm",
-      color: "green",
-    },
-    startDate: "",
-    endDate: "",
-    description: "",
-  },
-  {
-    id: "label 3",
-    name: "label 1",
-    tags: [
-      {
-        label: "label 1",
-        color: "green",
-      },
-    ],
-    stage: {
-      label: "Cần làm",
-      color: "green",
-    },
-    startDate: "",
-    endDate: "",
-    description: "",
   },
 ];
 

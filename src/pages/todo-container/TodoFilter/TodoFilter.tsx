@@ -17,30 +17,46 @@ import { format } from "date-fns";
 import { FC, useMemo, useState, useCallback } from "react";
 import { HiOutlineFilter } from "react-icons/hi";
 
+import useStageStore from "../../../zustand/useStageStore";
 import CollapseUI from "../../../components/CollapseUI/CollapseUI";
 import TagsInput, { TagOption } from "../../../components/TagsInput/TagsInput";
-import { FilteredFields, MOCK_COL_LABEL } from "../../../constants/utils.const";
+import { FilteredFields, KanbanCol } from "../../../constants/utils.const";
 
 interface Props {
   handleUpdateFilter: (filter: FilteredFields) => void;
   filter: FilteredFields;
+  kanban: KanbanCol[];
 }
 
-const TodoFilter: FC<Props> = ({ handleUpdateFilter, filter: filterd }) => {
+const TodoFilter: FC<Props> = ({
+  handleUpdateFilter,
+  filter: filterd,
+  kanban = [],
+}) => {
+  const allStage = useStageStore((state) => state.allStage);
   const [filter, setFilter] = useState<FilteredFields>(filterd);
   const [isOpen, setIsOpen] = useState(false);
 
+  const stageOptions = useMemo<TagOption[]>(
+    () =>
+      allStage?.map((stage) => ({
+        color: stage.colorChema || "",
+        id: stage.id || crypto.randomUUID(),
+        label: stage.label,
+      })) || [],
+    [allStage]
+  );
+
   const filterData = useMemo(() => {
-    const stageFilter = MOCK_COL_LABEL?.find((i) => i.id === filter?.stage);
+    const listStageIDs = filter?.stage?.map((stage) => stage) || [];
+    const stageFilter = kanban?.filter((i) => listStageIDs.includes(i.id));
 
     const defaultStageFilter: TagOption[] = stageFilter
-      ? [
-          {
-            color: stageFilter.labelColor,
-            id: stageFilter.id,
-            label: stageFilter.label,
-          },
-        ]
+      ? stageFilter?.map((fil) => ({
+          color: fil.labelColor,
+          id: fil.id,
+          label: fil.label,
+        }))
       : [];
 
     const defaultTagFilter: TagOption[] = [];
@@ -48,7 +64,7 @@ const TodoFilter: FC<Props> = ({ handleUpdateFilter, filter: filterd }) => {
       stage: defaultStageFilter,
       tag: defaultTagFilter,
     };
-  }, [filter?.stage]);
+  }, [filter?.stage, kanban]);
 
   const handleConfirm = useCallback(() => {
     handleUpdateFilter(filter);
@@ -107,22 +123,13 @@ const TodoFilter: FC<Props> = ({ handleUpdateFilter, filter: filterd }) => {
             title="Giai đoạn"
             element={
               <TagsInput
-                tagOption={[
-                  { color: "green", id: "To do", label: "Cần làm" },
-                  {
-                    color: "purple",
-                    id: "In progress",
-                    label: "Đang Tiến Hành",
-                  },
-                  { color: "red", id: "Done", label: "Kết thúc" },
-                ]}
+                tagOption={stageOptions}
                 onChange={(data) => {
                   setFilter((prev) => ({
                     ...prev,
-                    stage: typeof data !== "string" ? "" : data,
+                    stage: typeof data !== "string" ? data : [],
                   }));
                 }}
-                singleSelect
                 selectedData={filterData.stage}
               />
             }

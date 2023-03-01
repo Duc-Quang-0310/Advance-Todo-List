@@ -5,32 +5,39 @@ import { AiOutlinePlus } from "react-icons/ai";
 
 import { StrictModeDroppable } from "../../../components/Droppable/StrictModeDroppable";
 import { DropableType, KanbanCol } from "../../../constants/utils.const";
-import { getKanBanDragResult } from "../../../helper/utils.helper";
 import useStageStore from "../../../zustand/useStageStore";
+import useTaskStore from "../../../zustand/useTaskStore";
 import Column from "./components/Column";
 
 interface KanbanModeProps {
   handleAddNewCol: () => void;
   kanban: KanbanCol[];
   setKanban: Dispatch<SetStateAction<KanbanCol[]>>;
+  defaultKanban: KanbanCol[];
 }
 
 const KanbanMode: FC<KanbanModeProps> = ({
   handleAddNewCol,
   kanban,
   setKanban,
+  defaultKanban,
 }) => {
   const allStage = useStageStore((state) => state.allStage);
+  const updateTask = useTaskStore((state) => state.updateTask);
   const updateStage = useStageStore((state) => state.updateStage);
 
   const onDragEnd = useCallback(
-    (dragResult: DropResult) => {
+    async (dragResult: DropResult) => {
       const { source, destination, type } = dragResult;
+
       if (!destination) {
         return null;
       }
 
-      if (destination.index === source.index) {
+      if (
+        destination.index === source.index &&
+        destination.droppableId === source.droppableId
+      ) {
         return;
       }
 
@@ -42,7 +49,7 @@ const KanbanMode: FC<KanbanModeProps> = ({
         const changedCols = allStage
           ?.map((stage, index) => {
             if (stage.id !== updatedKanban?.[index]?.id) {
-              const newIndexOrder = updatedKanban?.findIndex(
+              const newIndexOrder: number = updatedKanban?.findIndex(
                 (kb) => kb.id === stage.id
               );
 
@@ -73,25 +80,35 @@ const KanbanMode: FC<KanbanModeProps> = ({
 
         return setKanban(updatedKanban);
       }
-      const newKanban = getKanBanDragResult(kanban, source, destination);
 
-      if (!newKanban?.length) {
-        return null;
+      const movedTo = structuredClone<KanbanCol[]>(kanban).find(
+        (k) => k.colData.id === destination.droppableId
+      );
+
+      const movedFrom = structuredClone<KanbanCol[]>(kanban).find(
+        (k) => k.colData.id === source.droppableId
+      );
+
+      if (movedTo && movedFrom) {
+        await updateTask({
+          id: movedFrom?.colData?.row?.[source.index]?.id,
+          stageId: movedTo?.id,
+        });
       }
-      setKanban(newKanban);
     },
-    [allStage, kanban, setKanban, updateStage]
+    [allStage, kanban, setKanban, updateStage, updateTask]
   );
 
   return (
     <SlideFade in>
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext onDragEnd={onDragEnd} dragHandleUsageInstructions="Yes">
         <StrictModeDroppable
           droppableId={DropableType.BOARD}
           type={DropableType.BOARD}
           key={DropableType.BOARD}
           direction="horizontal"
           isCombineEnabled
+          isDropDisabled={kanban.length !== defaultKanban.length}
         >
           {({ droppableProps, innerRef, placeholder }) => (
             <Box display="flex" ref={innerRef} {...droppableProps}>

@@ -15,8 +15,6 @@ import {
   AlertIcon,
   Badge,
 } from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { FC, useCallback, useEffect, useMemo } from "react";
 
 import {
@@ -30,6 +28,7 @@ import { format } from "date-fns";
 import { TAG_COLOR } from "../../../constants/color.const";
 import TagsInput, { TagOption } from "../../../components/TagsInput/TagsInput";
 import useStageStore from "../../../zustand/useStageStore";
+import { useZodForm } from "../../../hooks/useZodForm";
 
 interface Props {
   isOpen: boolean;
@@ -40,11 +39,11 @@ interface Props {
   onViewMode?: boolean;
 }
 
-const MOCKS_TAG = [
-  { color: "green", id: "1", label: "Label 1" },
-  { color: "red", id: "2", label: "Label 2" },
-  { color: "yellow", id: "3", label: "Label 3" },
-];
+const addTaskDefaultValues = {
+  type: "task" as "task" | "tag",
+  startDate: format(new Date(), "yyyy-MM-dd"),
+  colorTag: TAG_COLOR[1],
+};
 
 const AddTaskModal: FC<Props> = ({
   handleClose,
@@ -67,21 +66,20 @@ const AddTaskModal: FC<Props> = ({
   );
 
   const {
-    handleSubmit,
-    formState: { errors, isDirty },
     register,
     watch,
     reset,
     setValue,
-  } = useForm<CreateTaskOrTypeBody>({
-    mode: "all",
-    resolver: zodResolver(CreateTaskOrTypeSchema),
-    defaultValues: {
-      type: "task",
-      startDate: format(new Date(), "yyyy-MM-dd"),
-      colorTag: TAG_COLOR[1],
-    },
-  });
+    formState: { errors, dirtyFields },
+    handleSubmit,
+  } = useZodForm<CreateTaskOrTypeBody>(
+    CreateTaskOrTypeSchema,
+    addTaskDefaultValues,
+    (form) => {
+      onSubmit(form);
+      handleClose();
+    }
+  );
 
   const typeWatch = watch("type");
   const colorWatch = watch("colorTag");
@@ -100,14 +98,6 @@ const AddTaskModal: FC<Props> = ({
     );
   }, [handleClose, reset]);
 
-  const handleSubmitForm = useCallback(
-    (form: CreateTaskOrTypeBody) => {
-      onSubmit(form);
-      handleCloseInternal();
-    },
-    [handleCloseInternal, onSubmit]
-  );
-
   const dataTags = useMemo(() => {
     if (!tagWatch) {
       return [];
@@ -115,15 +105,15 @@ const AddTaskModal: FC<Props> = ({
 
     return tagWatch
       ?.map((tagId) => {
-        const indexFound = MOCKS_TAG.findIndex((child) => child.id === tagId);
+        const indexFound = allStage.findIndex((child) => child.id === tagId);
 
         if (indexFound) {
-          return MOCKS_TAG[indexFound];
+          return allStage[indexFound];
         }
         return null;
       })
       ?.filter((i) => i !== null) as any;
-  }, [tagWatch]);
+  }, [allStage, tagWatch]);
 
   useEffect(() => {
     const type = data?.type || "task";
@@ -333,10 +323,10 @@ const AddTaskModal: FC<Props> = ({
             <Button
               colorScheme="green"
               mr={3}
-              onClick={handleSubmit(handleSubmitForm)}
-              disabled={!isDirty}
+              onClick={handleSubmit}
+              disabled={Object.keys(dirtyFields).length === 0}
             >
-              {data ? "Cập nhật" : "Tạo mới"}
+              {data?.name ? "Cập nhật" : "Tạo mới"}
             </Button>
           ) : null}
           <Button
