@@ -70,7 +70,7 @@ const AddTaskModal: FC<Props> = ({
     watch,
     reset,
     setValue,
-    formState: { errors, isDirty },
+    formState: { errors, dirtyFields },
     handleSubmit,
   } = useZodForm<CreateTaskOrTypeBody>(
     CreateTaskOrTypeSchema,
@@ -324,7 +324,7 @@ const AddTaskModal: FC<Props> = ({
               colorScheme="green"
               mr={3}
               onClick={handleSubmit}
-              disabled={!isDirty}
+              disabled={Object.keys(dirtyFields).length === 0}
             >
               {data?.name ? "Cập nhật" : "Tạo mới"}
             </Button>

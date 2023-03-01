@@ -40,10 +40,24 @@ export interface Stage extends DocumentData {
 
 export enum FirestoreSchema {
   STAGE = "stage",
-  task = "task",
+  TASK = "task",
 }
 
 export interface Filter {
   onSuccess?: () => void;
   user?: Partial<User>;
+}
+
+export interface Task extends DocumentData {
+  id?: string;
+  name: string;
+  // <-- id1, id2, id3, ... -->
+  tags: string;
+  stageId: string;
+  startDate?: Timestamp;
+  endDate?: Timestamp;
+  description?: string;
+  updatedAt?: Timestamp;
+  createdAt?: Timestamp;
+  index?: number;
 }

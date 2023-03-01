@@ -32,6 +32,9 @@ export const useZodForm = <F extends FieldValues>(
           keepTouched: false,
           keepDirtyValues: false,
           keepValues: false,
+          keepIsSubmitted: false,
+          keepIsValid: false,
+          keepSubmitCount: false,
         });
       }, onInvalid)(),
     [form, handleSubmitForm, onInvalid, onValid]
