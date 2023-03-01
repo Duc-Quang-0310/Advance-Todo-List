@@ -16,6 +16,8 @@ import LoadingFallBack from "../../components/LoadingFallBack/LoadingFallBack";
 import useKanbanData from "../../hooks/useKanbanData";
 import useStageStore from "../../zustand/useStageStore";
 import useAccountStore from "../../zustand/useAccountStore";
+import useTaskStore from "../../zustand/useTaskStore";
+import { Timestamp } from "firebase/firestore";
 
 const KanbanMode = lazy(() => import("./KanbanMode/KanbanMode"));
 const TableMode = lazy(() => import("./TableMode/TableMode"));
@@ -37,15 +39,19 @@ const TodoContainer = () => {
   const createNewStage = useStageStore((state) => state.createNewStage);
   const allStage = useStageStore((state) => state.allStage);
   const userInfo = useAccountStore((state) => state.userInfo);
+  const createNewTask = useTaskStore((state) => state.createNewTask);
+  const updateTask = useTaskStore((state) => state.updateTask);
 
   const [viewMode, setViewMode] = useState(WatchMode.KANBAN);
   const [openModal, setOpenModal] = useState(false);
   const [data, setData] = useState<Partial<CreateTaskOrTypeBody>>();
   const { kanban, setKanban } = useKanbanData();
   const [filter, setFilter] = useState(filterFields);
+  const [onViewMode, setOnViewMode] = useState(false);
 
   const handleClickAdd = useCallback(() => {
     setOpenModal(true);
+    if (onViewMode) setOnViewMode(false);
     if (viewMode === WatchMode.KANBAN) {
       return setData({
         type: "tag",
@@ -54,12 +60,27 @@ const TodoContainer = () => {
     setData({
       type: "task",
     });
-  }, [viewMode]);
+  }, [onViewMode, viewMode]);
 
   const handleCloseModal = useCallback(() => {
+    if (onViewMode) setOnViewMode(false);
     setOpenModal(false);
     setData({});
-  }, []);
+  }, [onViewMode]);
+
+  const handleTableModeAction = useCallback(
+    (action: "view" | "edit", data: Partial<CreateTaskOrTypeBody>) => {
+      setData(data);
+      setOpenModal(true);
+      if (action === "view") {
+        return setOnViewMode(true);
+      }
+
+      setData(data);
+      setOnViewMode(false);
+    },
+    []
+  );
 
   const filteredKanban = useMemo(() => {
     let oldKanban = structuredClone<KanbanCol[]>(kanban) || [];
@@ -86,19 +107,37 @@ const TodoContainer = () => {
           />
         );
       case WatchMode.TABLE:
-        return <TableMode />;
+        return <TableMode onModeClick={handleTableModeAction} />;
       default:
         return null;
     }
-  }, [viewMode, handleClickAdd, filteredKanban, setKanban, kanban]);
+  }, [
+    viewMode,
+    handleClickAdd,
+    filteredKanban,
+    setKanban,
+    kanban,
+    handleTableModeAction,
+  ]);
 
   const handleChangeMode = useCallback((mode: WatchMode) => {
     setViewMode(mode);
   }, []);
 
-  const handleSubmitCreation = useCallback(
+  const handleSubmit = useCallback(
     (form: CreateTaskOrTypeBody) => {
       const { type, ...other } = form;
+
+      if (viewMode === WatchMode.TABLE) {
+        return updateTask({
+          id: other?.id || "",
+          name: other.name,
+          tags: "",
+          description: other?.description || "",
+          endDate: Timestamp.fromDate(new Date(other?.endDate || "")),
+        });
+      }
+
       if (type === "tag") {
         return createNewStage({
           colorChema: other.colorTag || "",
@@ -109,8 +148,25 @@ const TodoContainer = () => {
           refID: crypto.randomUUID(),
         });
       }
+
+      createNewTask({
+        name: other.name,
+        stageId: kanban[0]?.id,
+        tags: "",
+        description: other?.description || "",
+        endDate: Timestamp.fromDate(new Date(other?.endDate || "")),
+        userId: userInfo?.userID as string,
+      });
     },
-    [allStage?.length, createNewStage, userInfo?.userID]
+    [
+      allStage?.length,
+      createNewStage,
+      createNewTask,
+      kanban,
+      updateTask,
+      userInfo?.userID,
+      viewMode,
+    ]
   );
 
   const handleUpdateFilter = useCallback((filter: FilteredFields) => {
@@ -164,9 +220,11 @@ const TodoContainer = () => {
         </Suspense>
       </Box>
       <AddTaskModal
+        disableField={viewMode === WatchMode.TABLE ? ["tag"] : undefined}
+        onViewMode={onViewMode}
         isOpen={openModal}
         handleClose={handleCloseModal}
-        onSubmit={handleSubmitCreation}
+        onSubmit={handleSubmit}
         data={data}
       />
     </Box>

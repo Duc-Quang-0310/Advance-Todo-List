@@ -13,22 +13,18 @@ import {
   Badge,
   Text,
   Button,
-  ButtonGroup,
-  Icon,
 } from "@chakra-ui/react";
 import { format } from "date-fns";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { CreateTaskOrTypeBody } from "../../../../constants/validate.const";
 import useAccountStore from "../../../../zustand/useAccountStore";
-import { FiEdit2, FiEye } from "react-icons/fi";
-import { MdDeleteOutline } from "react-icons/md";
 
 import useStageStore from "../../../../zustand/useStageStore";
 import AddTaskModal from "../../../todo-container/AddTaskModal/AddTaskModal";
 import { toastError } from "../../../../helper/toast";
 import { Stage } from "../../../../zustand/type";
-import ConfirmModal from "../../../../components/ConfirmModal/ConfirmModal";
 import LoadingFallBack from "../../../../components/LoadingFallBack/LoadingFallBack";
+import GroupAction from "../../../../components/GroupAction/GroupAction";
 
 const tableHeaders = [
   "Hành động",
@@ -51,8 +47,6 @@ const ChangeStage: FC = () => {
 
   const [onView, setOnView] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [openConfirmModal, setOpenConfirmModal] = useState(false);
-  const [deleteId, setDeleteId] = useState("");
   const [selectedStage, setSelectedStage] = useState<
     Partial<CreateTaskOrTypeBody>
   >({ type: "tag" });
@@ -106,7 +100,9 @@ const ChangeStage: FC = () => {
 
   const handleAction = useCallback(
     async (data?: Stage, onAction?: "delete" | "view" | "edit") => {
-      const defaultView = onAction || "view";
+      if (!onAction) {
+        return;
+      }
 
       if (!data) {
         return toastError({
@@ -114,11 +110,11 @@ const ChangeStage: FC = () => {
         });
       }
 
-      if (defaultView === "delete" && data?.id) {
-        setDeleteId(data?.id);
-        setOpenConfirmModal(true);
-        return;
+      if (onAction === "delete" && data?.id) {
+        return deleteStage({ id: data?.id });
       }
+
+      setOpenModal(true);
 
       setSelectedStage({
         colorTag: data?.colorChema,
@@ -127,27 +123,15 @@ const ChangeStage: FC = () => {
         id: data?.id,
         type: "tag",
       });
-      setOpenModal(true);
 
-      if (defaultView === "view") {
+      if (onAction === "view") {
         return setOnView(true);
       }
 
       setOnView(false);
     },
-    []
+    [deleteStage]
   );
-
-  const handleClickConfirmDelete = useCallback(() => {
-    if (deleteId) {
-      deleteStage({ id: deleteId });
-      setOpenConfirmModal(false);
-    }
-  }, [deleteId, deleteStage]);
-
-  const handleCancel = useCallback(() => {
-    setOpenConfirmModal(false);
-  }, []);
 
   const renderTableCaption = useMemo(() => {
     if (loading) {
@@ -223,28 +207,17 @@ const ChangeStage: FC = () => {
                 {allStage.map((stage) => (
                   <Tr key={stage.refID + stage.label}>
                     <Td display="flex">
-                      <ButtonGroup size="xs">
-                        <Button
-                          colorScheme="blue"
-                          onClick={() => handleAction(stage, "view")}
-                        >
-                          <Icon as={FiEye} w={4} h={4} />
-                        </Button>
-                        <Button
-                          colorScheme="green"
-                          disabled={stage?.isDefault}
-                          onClick={() => handleAction(stage, "edit")}
-                        >
-                          <Icon as={FiEdit2} w={3.5} h={3.5} />
-                        </Button>
-                        <Button
-                          colorScheme="red"
-                          disabled={stage?.isDefault}
-                          onClick={() => handleAction(stage, "delete")}
-                        >
-                          <Icon as={MdDeleteOutline} w={4} h={4} />
-                        </Button>
-                      </ButtonGroup>
+                      <GroupAction
+                        disable={{
+                          edit: stage?.isDefault,
+                          delete: stage?.isDefault,
+                        }}
+                        action={{
+                          delete: () => handleAction(stage, "delete"),
+                          view: () => handleAction(stage, "view"),
+                          edit: () => handleAction(stage, "edit"),
+                        }}
+                      />
                     </Td>
                     <Td>{stage.label}</Td>
                     <Td>{stage.description}</Td>
@@ -280,14 +253,6 @@ const ChangeStage: FC = () => {
         data={selectedStage}
         disableField={["task"]}
         onViewMode={onView}
-      />
-      <ConfirmModal
-        openModal={openConfirmModal}
-        onCancel={handleCancel}
-        onConfirm={handleClickConfirmDelete}
-        text={{
-          title: "Xác nhận xóa giai đoạn",
-        }}
       />
     </SlideFade>
   );

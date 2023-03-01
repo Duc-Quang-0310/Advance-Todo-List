@@ -21,6 +21,7 @@ const Task: FC<Props> = ({ task, isDragging, provided }) => {
       ref={innerRef}
       boxShadow="md"
       backgroundColor={isDragging ? "green.200" : "whiteAlpha.800"}
+      cursor={isDragging ? "grabbing" : "grab"}
       {...dragHandleProps}
       {...draggableProps}
     >
