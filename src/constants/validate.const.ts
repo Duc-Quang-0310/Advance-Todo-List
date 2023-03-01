@@ -110,7 +110,7 @@ export const CreateTaskOrTypeSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["endDate"],
-          message: "Ngày bắt đầu không được để trống",
+          message: "Ngày kết thúc không được để trống",
         });
       }
     }

@@ -13,12 +13,14 @@ interface KanbanModeProps {
   handleAddNewCol: () => void;
   kanban: KanbanCol[];
   setKanban: Dispatch<SetStateAction<KanbanCol[]>>;
+  defaultKanban: KanbanCol[];
 }
 
 const KanbanMode: FC<KanbanModeProps> = ({
   handleAddNewCol,
   kanban,
   setKanban,
+  defaultKanban,
 }) => {
   const allStage = useStageStore((state) => state.allStage);
   const updateStage = useStageStore((state) => state.updateStage);
@@ -42,7 +44,7 @@ const KanbanMode: FC<KanbanModeProps> = ({
         const changedCols = allStage
           ?.map((stage, index) => {
             if (stage.id !== updatedKanban?.[index]?.id) {
-              const newIndexOrder = updatedKanban?.findIndex(
+              const newIndexOrder: number = updatedKanban?.findIndex(
                 (kb) => kb.id === stage.id
               );
 
@@ -85,13 +87,14 @@ const KanbanMode: FC<KanbanModeProps> = ({
 
   return (
     <SlideFade in>
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext onDragEnd={onDragEnd} dragHandleUsageInstructions="Yes">
         <StrictModeDroppable
           droppableId={DropableType.BOARD}
           type={DropableType.BOARD}
           key={DropableType.BOARD}
           direction="horizontal"
           isCombineEnabled
+          isDropDisabled={kanban.length !== defaultKanban.length}
         >
           {({ droppableProps, innerRef, placeholder }) => (
             <Box display="flex" ref={innerRef} {...droppableProps}>

@@ -6,6 +6,7 @@ import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import {
   FilteredFields,
   filterFields,
+  KanbanCol,
   WatchMode,
 } from "../../constants/utils.const";
 import AddTaskModal from "./AddTaskModal/AddTaskModal";
@@ -61,12 +62,13 @@ const TodoContainer = () => {
   }, []);
 
   const filteredKanban = useMemo(() => {
-    let oldKanban = [...kanban] || [];
+    let oldKanban = structuredClone<KanbanCol[]>(kanban) || [];
 
     const { stage } = filter;
 
-    if (stage) {
-      oldKanban = oldKanban.filter((each) => each.id === stage);
+    if (stage.length > 0) {
+      const listStageIds = stage?.map((s) => s);
+      oldKanban = oldKanban.filter((each) => listStageIds.includes(each.id));
     }
 
     return oldKanban;
@@ -80,6 +82,7 @@ const TodoContainer = () => {
             handleAddNewCol={handleClickAdd}
             kanban={filteredKanban}
             setKanban={setKanban}
+            defaultKanban={kanban}
           />
         );
       case WatchMode.TABLE:
@@ -87,7 +90,7 @@ const TodoContainer = () => {
       default:
         return null;
     }
-  }, [viewMode, handleClickAdd, filteredKanban, setKanban]);
+  }, [viewMode, handleClickAdd, filteredKanban, setKanban, kanban]);
 
   const handleChangeMode = useCallback((mode: WatchMode) => {
     setViewMode(mode);
@@ -148,7 +151,11 @@ const TodoContainer = () => {
           >
             Thêm mới
           </Button>
-          <TodoFilter handleUpdateFilter={handleUpdateFilter} filter={filter} />
+          <TodoFilter
+            handleUpdateFilter={handleUpdateFilter}
+            filter={filter}
+            kanban={kanban}
+          />
         </ButtonGroup>
       </Box>
       <Box mt="5">
